@@ -1,31 +1,31 @@
 fileFormatVersion: 2
-guid: 9b772ff5b48fa244098c7696083ef664
+guid: a43a0fb802757ea439ae49f0731290f8
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -230648815411792593
-    second: Leo_Perfil_Izquierdo_0
+      213: -1112391784418529239
+    second: Leo_Espalda_0
   - first:
-      213: -8001952069629848039
-    second: Leo_Perfil_Izquierdo_1
+      213: -6538865739900531540
+    second: Leo_Espalda_1
   - first:
-      213: -7047087424829520692
-    second: Leo_Perfil_Izquierdo_2
+      213: -4947019920660000033
+    second: Leo_Espalda_2
   - first:
-      213: -2543409954847621986
-    second: Leo_Perfil_Izquierdo_3
+      213: -748091408986248378
+    second: Leo_Espalda_3
   - first:
-      213: 2794417501999173331
-    second: Leo_Perfil_Izquierdo_4
+      213: 6488857316544162819
+    second: Leo_Espalda_4
   - first:
-      213: 8130121645327374701
-    second: Leo_Perfil_Izquierdo_5
+      213: 7979602544839870550
+    second: Leo_Espalda_5
   - first:
-      213: 2549348334462249974
-    second: Leo_Perfil_Izquierdo_6
+      213: -3673317637872431754
+    second: Leo_Espalda_6
   - first:
-      213: 2851341714045288614
-    second: Leo_Perfil_Izquierdo_7
+      213: -8045597360336809513
+    second: Leo_Espalda_7
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -72,7 +72,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 32
+  spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -131,7 +131,7 @@ TextureImporter:
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
-    buildTarget: iOS
+    buildTarget: WindowsStoreApps
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -147,177 +147,177 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Leo_Perfil_Izquierdo_0
+      name: Leo_Espalda_0
       rect:
         serializedVersion: 2
-        x: 6
-        y: 98
-        width: 20
-        height: 33
+        x: 0
+        y: 96
+        width: 32
+        height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: f25f389df129cccf0800000000000000
-      internalID: -230648815411792593
+      spriteID: 920bba6d09dff80f0800000000000000
+      internalID: -1112391784418529239
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Leo_Perfil_Izquierdo_1
+      name: Leo_Espalda_1
       rect:
         serializedVersion: 2
-        x: 38
-        y: 98
-        width: 20
-        height: 33
+        x: 32
+        y: 96
+        width: 32
+        height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 916d2042dfa53f090800000000000000
-      internalID: -8001952069629848039
+      spriteID: cacc14301484145a0800000000000000
+      internalID: -6538865739900531540
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Leo_Perfil_Izquierdo_2
+      name: Leo_Espalda_2
       rect:
         serializedVersion: 2
-        x: 70
-        y: 98
-        width: 20
-        height: 32
+        x: 64
+        y: 96
+        width: 32
+        height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: cc40aedf257b33e90800000000000000
-      internalID: -7047087424829520692
+      spriteID: fd29744b797a85bb0800000000000000
+      internalID: -4947019920660000033
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Leo_Perfil_Izquierdo_3
+      name: Leo_Espalda_3
       rect:
         serializedVersion: 2
-        x: 6
-        y: 50
-        width: 20
-        height: 32
+        x: 0
+        y: 48
+        width: 32
+        height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: e9c7d132f1ef3bcd0800000000000000
-      internalID: -2543409954847621986
+      spriteID: 64b6adbb3de3e95f0800000000000000
+      internalID: -748091408986248378
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Leo_Perfil_Izquierdo_4
+      name: Leo_Espalda_4
       rect:
         serializedVersion: 2
-        x: 38
-        y: 50
-        width: 20
-        height: 33
+        x: 32
+        y: 48
+        width: 32
+        height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 3de8bc0a9e3c7c620800000000000000
-      internalID: 2794417501999173331
+      spriteID: 30c2fc6995d0d0a50800000000000000
+      internalID: 6488857316544162819
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Leo_Perfil_Izquierdo_5
+      name: Leo_Espalda_5
       rect:
         serializedVersion: 2
-        x: 70
-        y: 50
-        width: 20
-        height: 33
+        x: 64
+        y: 48
+        width: 32
+        height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: d69d37aaf8ef3d070800000000000000
-      internalID: 8130121645327374701
+      spriteID: 658cbfd9c3e3dbe60800000000000000
+      internalID: 7979602544839870550
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Leo_Perfil_Izquierdo_6
+      name: Leo_Espalda_6
       rect:
         serializedVersion: 2
-        x: 6
-        y: 2
-        width: 20
-        height: 32
+        x: 0
+        y: 0
+        width: 32
+        height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 6fb2b5c9dca116320800000000000000
-      internalID: 2549348334462249974
+      spriteID: 67dcf670211c50dc0800000000000000
+      internalID: -3673317637872431754
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Leo_Perfil_Izquierdo_7
+      name: Leo_Espalda_7
       rect:
         serializedVersion: 2
-        x: 38
-        y: 2
-        width: 20
-        height: 32
+        x: 32
+        y: 0
+        width: 32
+        height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 6a04cee8e20029720800000000000000
-      internalID: 2851341714045288614
+      spriteID: 7d1dd4304db485090800000000000000
+      internalID: -8045597360336809513
       vertices: []
       indices: 
       edges: []
@@ -326,7 +326,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: a2c01e9f04538e14aaeb9e2506526047
     internalID: 0
     vertices: []
     indices: 
@@ -334,16 +334,18 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":32.0,"y":48.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      Leo_Perfil_Izquierdo_0: -230648815411792593
-      Leo_Perfil_Izquierdo_1: -8001952069629848039
-      Leo_Perfil_Izquierdo_2: -7047087424829520692
-      Leo_Perfil_Izquierdo_3: -2543409954847621986
-      Leo_Perfil_Izquierdo_4: 2794417501999173331
-      Leo_Perfil_Izquierdo_5: 8130121645327374701
-      Leo_Perfil_Izquierdo_6: 2549348334462249974
-      Leo_Perfil_Izquierdo_7: 2851341714045288614
+      Leo_Espalda_0: -1112391784418529239
+      Leo_Espalda_1: -6538865739900531540
+      Leo_Espalda_2: -4947019920660000033
+      Leo_Espalda_3: -748091408986248378
+      Leo_Espalda_4: 6488857316544162819
+      Leo_Espalda_5: 7979602544839870550
+      Leo_Espalda_6: -3673317637872431754
+      Leo_Espalda_7: -8045597360336809513
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -1,0 +1,47 @@
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class LeoController : MonoBehaviour
+{
+    public float speed = 3f;
+
+    Rigidbody2D rb;
+    Animator anim;
+    Vector2 move;
+    Vector2 lastDir = new Vector2(0f, -1f); // empieza mirando hacia abajo
+
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
+    }
+
+    void Update()
+    {
+        Keyboard k = Keyboard.current;
+        if (k == null) return;
+
+        float x = 0f, y = 0f;
+        if (k.aKey.isPressed || k.leftArrowKey.isPressed) x -= 1f;
+        if (k.dKey.isPressed || k.rightArrowKey.isPressed) x += 1f;
+        if (k.sKey.isPressed || k.downArrowKey.isPressed) y -= 1f;
+        if (k.wKey.isPressed || k.upArrowKey.isPressed) y += 1f;
+
+        // Sin diagonales: si hay horizontal, se ignora el vertical
+        if (x != 0f) y = 0f;
+
+        move = new Vector2(x, y);
+        bool moving = move != Vector2.zero;
+
+        if (moving) lastDir = move;
+
+        anim.SetBool("IsMoving", moving);
+        anim.SetFloat("Horizontal", lastDir.x);
+        anim.SetFloat("Vertical", lastDir.y);
+    }
+
+    void FixedUpdate()
+    {
+        rb.linearVelocity = move * speed;
+    }
+}
