@@ -1,37 +1,40 @@
 fileFormatVersion: 2
-guid: 7b733b0e68d80b341bbd549b0283fb6b
+guid: 3bbf855150cf13841a6a88f562427420
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 8892363626508350786
-    second: Eli_Saludo_0
+      213: 5623199464407062104
+    second: Gaby_Pensando_0
   - first:
-      213: -3222868068085708533
-    second: Eli_Saludo_1
+      213: -5963286403013071377
+    second: Gaby_Pensando_1
   - first:
-      213: 7319019895088763417
-    second: Eli_Saludo_2
+      213: -3811596013716009244
+    second: Gaby_Pensando_2
   - first:
-      213: -4637182193411066014
-    second: Eli_Saludo_3
+      213: 6296564262605248761
+    second: Gaby_Pensando_3
   - first:
-      213: -1168418212385570017
-    second: Eli_Saludo_4
+      213: -5611973969224462548
+    second: Gaby_Pensando_4
   - first:
-      213: -5844185212133895915
-    second: Eli_Saludo_5
+      213: -8524989034416917380
+    second: Gaby_Pensando_5
   - first:
-      213: -8984253818467161222
-    second: Eli_Saludo_6
+      213: -8529021639518117173
+    second: Gaby_Pensando_6
   - first:
-      213: 944785735010109796
-    second: Eli_Saludo_7
+      213: -136690733996426377
+    second: Gaby_Pensando_7
   - first:
-      213: -3777319624983105245
-    second: Eli_Saludo_8
+      213: 1493429744775600757
+    second: Gaby_Pensando_8
   - first:
-      213: -6531329598494136169
-    second: Eli_Saludo_9
+      213: -87997691070974804
+    second: Gaby_Pensando_9
+  - first:
+      213: -8116887881047918413
+    second: Gaby_Pensando_10
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -78,7 +81,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 32
+  spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -137,7 +140,7 @@ TextureImporter:
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
-    buildTarget: iOS
+    buildTarget: WindowsStoreApps
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -153,221 +156,243 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Eli_Saludo_0
+      name: Gaby_Pensando_0
       rect:
         serializedVersion: 2
-        x: 7
-        y: 98
-        width: 19
-        height: 32
+        x: 0
+        y: 96
+        width: 32
+        height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 24572a3ca95086b70800000000000000
-      internalID: 8892363626508350786
+      spriteID: 8565621be1e990e40800000000000000
+      internalID: 5623199464407062104
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Eli_Saludo_1
+      name: Gaby_Pensando_1
       rect:
         serializedVersion: 2
-        x: 39
-        y: 98
-        width: 20
-        height: 32
+        x: 32
+        y: 96
+        width: 32
+        height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b094dcb41921643d0800000000000000
-      internalID: -3222868068085708533
+      spriteID: fed2d7e7c962e3da0800000000000000
+      internalID: -5963286403013071377
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Eli_Saludo_2
+      name: Gaby_Pensando_2
       rect:
         serializedVersion: 2
-        x: 71
-        y: 98
-        width: 20
-        height: 32
+        x: 64
+        y: 96
+        width: 32
+        height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 91258c611d1629560800000000000000
-      internalID: 7319019895088763417
+      spriteID: 4ee8927ce9d7a1bc0800000000000000
+      internalID: -3811596013716009244
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Eli_Saludo_3
+      name: Gaby_Pensando_3
       rect:
         serializedVersion: 2
-        x: 103
-        y: 98
-        width: 21
-        height: 32
+        x: 96
+        y: 96
+        width: 32
+        height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 26777fa2d5b65afb0800000000000000
-      internalID: -4637182193411066014
+      spriteID: 9f8510216d3e16750800000000000000
+      internalID: 6296564262605248761
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Eli_Saludo_4
+      name: Gaby_Pensando_4
       rect:
         serializedVersion: 2
-        x: 7
-        y: 50
-        width: 20
-        height: 32
+        x: 0
+        y: 48
+        width: 32
+        height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: f1349ad83d1f8cfe0800000000000000
-      internalID: -1168418212385570017
+      spriteID: c2f03a398634e12b0800000000000000
+      internalID: -5611973969224462548
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Eli_Saludo_5
+      name: Gaby_Pensando_5
       rect:
         serializedVersion: 2
-        x: 39
-        y: 50
-        width: 20
-        height: 32
+        x: 32
+        y: 48
+        width: 32
+        height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 5111b2d638845eea0800000000000000
-      internalID: -5844185212133895915
+      spriteID: c74ba79f3a721b980800000000000000
+      internalID: -8524989034416917380
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Eli_Saludo_6
+      name: Gaby_Pensando_6
       rect:
         serializedVersion: 2
-        x: 71
-        y: 50
-        width: 20
-        height: 32
+        x: 64
+        y: 48
+        width: 32
+        height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: a7b6152b0c4815380800000000000000
-      internalID: -8984253818467161222
+      spriteID: bc227eee104d2a980800000000000000
+      internalID: -8529021639518117173
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Eli_Saludo_7
+      name: Gaby_Pensando_7
       rect:
         serializedVersion: 2
-        x: 103
-        y: 50
-        width: 21
-        height: 32
+        x: 96
+        y: 48
+        width: 32
+        height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 469422cce9d8c1d00800000000000000
-      internalID: 944785735010109796
+      spriteID: 77b3e0c60806a1ef0800000000000000
+      internalID: -136690733996426377
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Eli_Saludo_8
+      name: Gaby_Pensando_8
       rect:
         serializedVersion: 2
-        x: 7
-        y: 2
-        width: 20
-        height: 32
+        x: 0
+        y: 0
+        width: 32
+        height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 32135cd60d3449bc0800000000000000
-      internalID: -3777319624983105245
+      spriteID: 57a1a5ab07ab9b410800000000000000
+      internalID: 1493429744775600757
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Eli_Saludo_9
+      name: Gaby_Pensando_9
       rect:
         serializedVersion: 2
-        x: 39
-        y: 2
-        width: 19
-        height: 32
+        x: 32
+        y: 0
+        width: 32
+        height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 79823caa55e0c55a0800000000000000
-      internalID: -6531329598494136169
+      spriteID: ca4f8a2f09e57cef0800000000000000
+      internalID: -87997691070974804
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Gaby_Pensando_10
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 0
+        width: 32
+        height: 48
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3b837703a750b5f80800000000000000
+      internalID: -8116887881047918413
       vertices: []
       indices: 
       edges: []
@@ -376,7 +401,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: b8355081d9aa51247b9123cdabf76ec1
     internalID: 0
     vertices: []
     indices: 
@@ -384,18 +409,21 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":32.0,"y":48.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      Eli_Saludo_0: 8892363626508350786
-      Eli_Saludo_1: -3222868068085708533
-      Eli_Saludo_2: 7319019895088763417
-      Eli_Saludo_3: -4637182193411066014
-      Eli_Saludo_4: -1168418212385570017
-      Eli_Saludo_5: -5844185212133895915
-      Eli_Saludo_6: -8984253818467161222
-      Eli_Saludo_7: 944785735010109796
-      Eli_Saludo_8: -3777319624983105245
-      Eli_Saludo_9: -6531329598494136169
+      Gaby_Pensando_0: 5623199464407062104
+      Gaby_Pensando_1: -5963286403013071377
+      Gaby_Pensando_10: -8116887881047918413
+      Gaby_Pensando_2: -3811596013716009244
+      Gaby_Pensando_3: 6296564262605248761
+      Gaby_Pensando_4: -5611973969224462548
+      Gaby_Pensando_5: -8524989034416917380
+      Gaby_Pensando_6: -8529021639518117173
+      Gaby_Pensando_7: -136690733996426377
+      Gaby_Pensando_8: 1493429744775600757
+      Gaby_Pensando_9: -87997691070974804
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
