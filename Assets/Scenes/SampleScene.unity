@@ -2358,6 +2358,15 @@ MonoBehaviour:
   lines:
   - "\xA1Hola!, Soy la profesora Gaby Nieva Paredes"
   - "Yo imparto las materias orientadas a programaci\xF3n"
+  launcher: {fileID: 0}
+  minigame: {fileID: 0}
+  congratsLines:
+  - "\xA1LO LOGRASTE, LEO! La red de la planta alta vuelve a estar en l\xEDnea."
+  - "Te lo digo en serio: ni los switches se conectan tan r\xE1pido como t\xFA."
+  - "As\xED se trabaja en Redes y Ciberseguridad: paciencia, l\xF3gica y mucho cable."
+  - "Gracias por la ayuda. \xA1Sigue as\xED, ya casi recuperas la base de datos!"
+  afterLines:
+  - "\xA1Ya todo funciona gracias a ti! Ve con las dem\xE1s docentes, que te esperan."
 --- !u!58 &454442358
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -19452,6 +19461,15 @@ MonoBehaviour:
   lines:
   - "\xA1Hola!, Soy la profesora Elizabeth Cortez Ramos"
   - Usualmente, imparto materias de Bases de Datos
+  launcher: {fileID: 0}
+  minigame: {fileID: 0}
+  congratsLines:
+  - "\xA1LO LOGRASTE, LEO! La red de la planta alta vuelve a estar en l\xEDnea."
+  - "Te lo digo en serio: ni los switches se conectan tan r\xE1pido como t\xFA."
+  - "As\xED se trabaja en Redes y Ciberseguridad: paciencia, l\xF3gica y mucho cable."
+  - "Gracias por la ayuda. \xA1Sigue as\xED, ya casi recuperas la base de datos!"
+  afterLines:
+  - "\xA1Ya todo funciona gracias a ti! Ve con las dem\xE1s docentes, que te esperan."
 --- !u!58 &634138995
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -19578,6 +19596,60 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 454442356}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1131404377
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1131404379}
+  - component: {fileID: 1131404378}
+  m_Layer: 0
+  m_Name: EthernetMinigame
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1131404378
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1131404377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6cfb52a1eff970741addfefc412a2fe9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EthernetMinigame
+  cablesPerPhase: 040000000600000008000000
+  disableWhilePlaying: []
+  freezeTime: 1
+  font: {fileID: 0}
+  onCompleted:
+    m_PersistentCalls:
+      m_Calls: []
+  onClosed:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!4 &1131404379
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1131404377}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 12.44888, y: -62.57708, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1147296314
 GameObject:
@@ -19875,7 +19947,7 @@ Transform:
   m_GameObject: {fileID: 1153071637}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 26.31575, y: -77.60301, z: 0}
+  m_LocalPosition: {x: 27.93, y: -76.14, z: 0}
   m_LocalScale: {x: 7, y: 7, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -19895,6 +19967,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LeoController
   speed: 3
+  runSpeed: 10
 --- !u!114 &1153071645
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19908,6 +19981,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LeoController
   speed: 3
+  runSpeed: 8
 --- !u!1 &1171893266
 GameObject:
   m_ObjectHideFlags: 0
@@ -20013,6 +20087,7 @@ GameObject:
   - component: {fileID: 1237189100}
   - component: {fileID: 1237189105}
   - component: {fileID: 1237189104}
+  - component: {fileID: 1237189106}
   m_Layer: 0
   m_Name: Gress_Cable
   m_TagString: Untagged
@@ -20179,6 +20254,15 @@ MonoBehaviour:
   - "\xA1Hola!, Yo soy la profesora Maricela Gress Roldan"
   - Me gusta que me digan, MariGress
   - "Soy docente en el \xE1rea de Redes y Ciberseguridad"
+  launcher: {fileID: 0}
+  minigame: {fileID: 0}
+  congratsLines:
+  - "\xA1LO LOGRASTE, LEO! La red de la planta alta vuelve a estar en l\xEDnea."
+  - "Te lo digo en serio: ni los switches se conectan tan r\xE1pido como t\xFA."
+  - "As\xED se trabaja en Redes y Ciberseguridad: paciencia, l\xF3gica y mucho cable."
+  - "Gracias por la ayuda. \xA1Sigue as\xED, ya casi recuperas la base de datos!"
+  afterLines:
+  - "\xA1Ya todo funciona gracias a ti! Ve con las dem\xE1s docentes, que te esperan."
 --- !u!58 &1237189105
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -20215,6 +20299,26 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 0.5
+--- !u!114 &1237189106
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1237189099}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2aa2ca8fa647c7844bebceed6598d3a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NPCMinigameLauncher
+  minigame: {fileID: 0}
+  question: "\xBFEst\xE1s listo para el reto de cableado?"
+  yesText: "S\xCD"
+  noText: NO
+  font: {fileID: 0}
+  onDeclined:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1321679118
 GameObject:
   m_ObjectHideFlags: 0
@@ -66329,7 +66433,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -35.52997, y: -23.503021}
+  m_AnchoredPosition: {x: -35.529907, y: -23.503052}
   m_SizeDelta: {x: 463.174, y: 386.187}
   m_Pivot: {x: 1, y: 1}
 --- !u!1 &1656043604
@@ -67068,6 +67172,15 @@ MonoBehaviour:
   lines:
   - "\xA1Hola!, Soy la profesora Margarita Lima Esteban"
   - "Y tengo un reto para t\xED"
+  launcher: {fileID: 0}
+  minigame: {fileID: 0}
+  congratsLines:
+  - "\xA1LO LOGRASTE, LEO! La red de la planta alta vuelve a estar en l\xEDnea."
+  - "Te lo digo en serio: ni los switches se conectan tan r\xE1pido como t\xFA."
+  - "As\xED se trabaja en Redes y Ciberseguridad: paciencia, l\xF3gica y mucho cable."
+  - "Gracias por la ayuda. \xA1Sigue as\xED, ya casi recuperas la base de datos!"
+  afterLines:
+  - "\xA1Ya todo funciona gracias a ti! Ve con las dem\xE1s docentes, que te esperan."
 --- !u!58 &1883806849
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -67710,3 +67823,4 @@ SceneRoots:
   - {fileID: 1321679121}
   - {fileID: 1402418712}
   - {fileID: 1596582991}
+  - {fileID: 1131404379}

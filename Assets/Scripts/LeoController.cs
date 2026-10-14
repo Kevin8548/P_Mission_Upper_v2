@@ -4,11 +4,13 @@ using UnityEngine.InputSystem;
 public class LeoController : MonoBehaviour
 {
     public float speed = 3f;
+    public float runSpeed = 16f;
 
     Rigidbody2D rb;
     Animator anim;
     Vector2 move;
     Vector2 lastDir = new Vector2(0f, -1f);
+    bool running;
 
     void Awake()
     {
@@ -25,6 +27,7 @@ public class LeoController : MonoBehaviour
         if (DialogueManager.Instance != null && DialogueManager.Instance.IsActive)
         {
             move = Vector2.zero;
+            running = false;
             anim.SetBool("IsMoving", false);
             return;
         }
@@ -40,6 +43,9 @@ public class LeoController : MonoBehaviour
         move = new Vector2(x, y);
         bool moving = move != Vector2.zero;
 
+        // Shift para correr
+        running = moving && (k.leftShiftKey.isPressed || k.rightShiftKey.isPressed);
+
         if (moving) lastDir = move;
 
         anim.SetBool("IsMoving", moving);
@@ -49,6 +55,7 @@ public class LeoController : MonoBehaviour
 
     void FixedUpdate()
     {
-        rb.linearVelocity = move * speed;
+        float currentSpeed = running ? runSpeed : speed;
+        rb.linearVelocity = move * currentSpeed;
     }
 }
