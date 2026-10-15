@@ -2,75 +2,106 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Di√°logo de un NPC con la tecla E.
-///
-/// - Si el NPC NO tiene NPCMinigameLauncher (Eli, Gaby, etc.), funciona igual que antes.
-/// - Si S√ç lo tiene (Gress): al terminar el di√°logo inicial pregunta "¬øEst√°s listo?";
-///   al completar el minijuego te felicita; y si vuelves a hablarle, te dice las
-///   l√≠neas de "despu√©s de completar".
+/// Di·logo de un NPC con la tecla E.
+/// Permite iniciar di·logos normales o gestionar el minijuego de cables.
 /// </summary>
 public class NPCDialogue : MonoBehaviour
 {
-    [Header("Di√°logo inicial")]
+    [Header("Di·logo inicial")]
     [TextArea(2, 5)]
     public string[] lines;
 
-    [Header("Minijuego (solo para el NPC que tenga uno)")]
-    [Tooltip("Si se deja vac√≠o, lo toma del mismo objeto.")]
+    [Tooltip("Nombre exacto de la escena del minijuego. VacÌo = sin pregunta SÌ/No")]
+    public string sceneToLoad;
+
+    [Header("Al regresar de ganar el minijuego")]
+    [TextArea(2, 5)]
+    public string[] victoryLines;
+
+    [Header("Minijuego")]
+    [Tooltip("Si se deja vacÌo, lo toma del mismo objeto.")]
     public NPCMinigameLauncher launcher;
-    [Tooltip("Si se deja vac√≠o, lo busca en la escena.")]
+
+    [Tooltip("Si se deja vacÌo, lo busca en la escena.")]
     public EthernetMinigame minigame;
 
-    [Header("Felicitaci√≥n (sale justo al completar el minijuego)")]
+    [Header("FelicitaciÛn al completar el minijuego")]
     [TextArea(2, 5)]
     public string[] congratsLines =
     {
-        "¬°LO LOGRASTE, LEO! La red de la planta alta vuelve a estar en l√≠nea.",
-        "Te lo digo en serio: ni los switches se conectan tan r√°pido como t√∫.",
-        "As√≠ se trabaja en Redes y Ciberseguridad: paciencia, l√≥gica y mucho cable.",
-        "Gracias por la ayuda. ¬°Sigue as√≠, ya casi recuperas la base de datos!"
+        "°LO LOGRASTE, LEO! La red de la planta alta vuelve a estar en lÌnea.",
+        "Te lo digo en serio: ni los switches se conectan tan r·pido como t˙.",
+        "AsÌ se trabaja en Redes y Ciberseguridad: paciencia, lÛgica y mucho cable.",
+        "Gracias por la ayuda. °Sigue asÌ, ya casi recuperas la base de datos!"
     };
 
-    [Header("Si vuelves a hablarle despu√©s de completarlo")]
-    [Tooltip("Si se deja vac√≠o, repite la felicitaci√≥n.")]
+    [Header("Di·logo despuÈs de completar el minijuego")]
+    [Tooltip("Si se deja vacÌo, repite la felicitaciÛn.")]
     [TextArea(2, 5)]
     public string[] afterLines =
     {
-        "¬°Ya todo funciona gracias a ti! Ve con las dem√°s docentes, que te esperan."
+        "°Ya todo funciona gracias a ti! Ve con las dem·s docentes, que te esperan."
     };
 
     enum Kind { None, Intro, Congrats, After }
 
     bool playerNear;
     bool wasActive;
-    bool myDialogue;     // true solo si el di√°logo activo lo inici√≥ ESTE npc
+    bool myDialogue;
     bool completed;
     Kind current = Kind.None;
 
-    bool HasMinigame { get { return launcher != null && minigame != null; } }
+    bool HasMinigame
+    {
+        get { return launcher != null && minigame != null; }
+    }
 
     void Start()
     {
-        if (launcher == null) launcher = GetComponent<NPCMinigameLauncher>();
+        // ConfiguraciÛn del minijuego
+        if (launcher == null)
+            launcher = GetComponent<NPCMinigameLauncher>();
 
         if (launcher != null)
         {
-            if (minigame == null) minigame = launcher.minigame;
-            if (minigame == null) minigame = FindFirstObjectByType<EthernetMinigame>();
-            if (launcher.minigame == null) launcher.minigame = minigame;
+            if (minigame == null)
+                minigame = launcher.minigame;
+
+            if (minigame == null)
+                minigame = FindFirstObjectByType<EthernetMinigame>();
+
+            if (launcher.minigame == null)
+                launcher.minigame = minigame;
         }
 
+        // Registrar eventos del minijuego
         if (HasMinigame)
         {
             minigame.onCompleted.AddListener(OnMinigameCompleted);
             minigame.onClosed.AddListener(OnMinigameClosed);
             launcher.onDeclined.AddListener(OnDeclined);
         }
+
+        // Di·logo al regresar de ganar el minijuego anterior
+        if (EstadoJuego.minijuegoGanado
+            && !string.IsNullOrEmpty(sceneToLoad)
+            && victoryLines != null
+            && victoryLines.Length > 0
+            && DialogueManager.Instance != null)
+        {
+            EstadoJuego.minijuegoGanado = false;
+            playerNear = true;
+            myDialogue = true;
+            current = Kind.After;
+
+            DialogueManager.Instance.StartDialogue(victoryLines);
+        }
     }
 
     void OnDestroy()
     {
         if (!HasMinigame) return;
+
         minigame.onCompleted.RemoveListener(OnMinigameCompleted);
         minigame.onClosed.RemoveListener(OnMinigameClosed);
         launcher.onDeclined.RemoveListener(OnDeclined);
@@ -80,27 +111,57 @@ public class NPCDialogue : MonoBehaviour
     {
         if (DialogueManager.Instance == null) return;
 
-        // Detecta el momento exacto en que termina un di√°logo de este NPC
+        // Detectar cu·ndo termina el di·logo
         bool active = DialogueManager.Instance.IsActive;
-        if (wasActive && !active) OnDialogueEnded();
+
+        if (wasActive && !active)
+            OnDialogueEnded();
+
         wasActive = active;
 
         if (!playerNear) return;
         if (Keyboard.current == null) return;
 
-        // Mientras est√° la pregunta o el minijuego, la E no hace nada
-        if (HasMinigame && (launcher.IsPromptOpen || minigame.IsPlaying)) return;
+        // No aceptar E mientras la pregunta o el minijuego estÈn activos
+        if (HasMinigame &&
+            (launcher.IsPromptOpen || minigame.IsPlaying))
+            return;
 
         if (Keyboard.current.eKey.wasPressedThisFrame)
         {
-            if (!DialogueManager.Instance.IsActive)
-                StartTalking();
+            DialogueManager dm = DialogueManager.Instance;
+
+            if (!dm.IsActive)
+            {
+                // Si existe un minijuego, gestionar el di·logo correspondiente
+                if (HasMinigame)
+                {
+                    StartTalking();
+                }
+                else
+                {
+                    // Mantener el comportamiento anterior para NPC normales
+                    dm.StartDialogue(lines, sceneToLoad);
+                }
+            }
+            else if (dm.IsChoosing)
+            {
+                dm.ConfirmChoice();
+            }
             else if (myDialogue)
-                DialogueManager.Instance.Next();
+            {
+                dm.Next();
+            }
+            else
+            {
+                dm.Next();
+            }
         }
     }
 
-    // ------------------------------------------------------------------
+    // --------------------------------------------------
+    // Di·logos
+    // --------------------------------------------------
 
     void StartTalking()
     {
@@ -110,7 +171,10 @@ public class NPCDialogue : MonoBehaviour
         if (HasMinigame && completed)
         {
             current = Kind.After;
-            toSay = (afterLines != null && afterLines.Length > 0) ? afterLines : congratsLines;
+
+            toSay = (afterLines != null && afterLines.Length > 0)
+                ? afterLines
+                : congratsLines;
         }
 
         myDialogue = true;
@@ -120,6 +184,7 @@ public class NPCDialogue : MonoBehaviour
     void OnDialogueEnded()
     {
         if (!myDialogue) return;
+
         myDialogue = false;
 
         Kind ended = current;
@@ -128,7 +193,7 @@ public class NPCDialogue : MonoBehaviour
         switch (ended)
         {
             case Kind.Intro:
-                // Termin√≥ el di√°logo inicial -> "¬øEst√°s listo?"
+                // Al terminar la introducciÛn, ofrecer iniciar el minijuego
                 if (HasMinigame && !completed)
                 {
                     DialogueManager.Instance.ShowPrompt(false);
@@ -138,29 +203,35 @@ public class NPCDialogue : MonoBehaviour
 
             case Kind.Congrats:
             case Kind.After:
-                if (playerNear) DialogueManager.Instance.ShowPrompt(true);
+                if (playerNear)
+                    DialogueManager.Instance.ShowPrompt(true);
                 break;
         }
     }
 
-    // ------------------------------------------------------------------
+    // --------------------------------------------------
     // Eventos del minijuego
-    // ------------------------------------------------------------------
+    // --------------------------------------------------
 
     void OnMinigameCompleted()
     {
         completed = true;
-        if (DialogueManager.Instance == null || congratsLines == null || congratsLines.Length == 0) return;
+
+        if (DialogueManager.Instance == null
+            || congratsLines == null
+            || congratsLines.Length == 0)
+            return;
 
         current = Kind.Congrats;
         myDialogue = true;
+
         DialogueManager.Instance.StartDialogue(congratsLines);
     }
 
     void OnMinigameClosed()
     {
-        // Si sali√≥ con la X (sin completar), vuelve a aparecer "Presiona E"
-        if (!completed) ShowPromptIfNear();
+        if (!completed)
+            ShowPromptIfNear();
     }
 
     void OnDeclined()
@@ -174,14 +245,18 @@ public class NPCDialogue : MonoBehaviour
             DialogueManager.Instance.ShowPrompt(true);
     }
 
-    // ------------------------------------------------------------------
+    // --------------------------------------------------
+    // DetecciÛn de proximidad
+    // --------------------------------------------------
 
     void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Player"))
         {
             playerNear = true;
-            DialogueManager.Instance.ShowPrompt(true);
+
+            if (DialogueManager.Instance != null)
+                DialogueManager.Instance.ShowPrompt(true);
         }
     }
 
@@ -190,7 +265,9 @@ public class NPCDialogue : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             playerNear = false;
-            DialogueManager.Instance.ShowPrompt(false);
+
+            if (DialogueManager.Instance != null)
+                DialogueManager.Instance.ShowPrompt(false);
         }
     }
 }
