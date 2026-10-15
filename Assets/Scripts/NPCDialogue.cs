@@ -5,7 +5,8 @@ using UnityEngine.InputSystem;
 /// Diálogo de un NPC con la tecla E.
 /// - Si "Scene To Load" tiene un nombre, la última línea muestra la pregunta Sí/No
 ///   y al decir Sí se carga esa escena (minijuego).
-/// - Al regresar de ganar el minijuego, el NPC dice las "Victory Lines".
+/// - Al regresar de ganar el minijuego, SOLO el NPC cuyo "Scene To Load" coincide
+///   con el minijuego ganado dice las "Victory Lines".
 /// </summary>
 public class NPCDialogue : MonoBehaviour
 {
@@ -25,16 +26,24 @@ public class NPCDialogue : MonoBehaviour
     void Start()
     {
         // Diálogo al regresar de ganar el minijuego
-        if (EstadoJuego.minijuegoGanado
-            && !string.IsNullOrEmpty(sceneToLoad)
-            && victoryLines != null
-            && victoryLines.Length > 0
-            && DialogueManager.Instance != null)
-        {
-            EstadoJuego.minijuegoGanado = false;
-            playerNear = true;
-            DialogueManager.Instance.StartDialogue(victoryLines);
-        }
+        if (!EstadoJuego.minijuegoGanado) return;
+        if (string.IsNullOrEmpty(sceneToLoad)) return;
+        if (victoryLines == null || victoryLines.Length == 0) return;
+        if (DialogueManager.Instance == null) return;
+
+        // Solo reacciona el NPC del minijuego que se ganó.
+        // Si EstadoJuego.minijuegoGanadoEscena está vacío, se comporta como antes
+        // (compatibilidad por si algún minijuego todavía no la asigna).
+        bool esMiMinijuego =
+            string.IsNullOrEmpty(EstadoJuego.minijuegoGanadoEscena)
+            || EstadoJuego.minijuegoGanadoEscena == sceneToLoad;
+
+        if (!esMiMinijuego) return;
+
+        EstadoJuego.minijuegoGanado = false;
+        EstadoJuego.minijuegoGanadoEscena = null;
+        playerNear = true;
+        DialogueManager.Instance.StartDialogue(victoryLines);
     }
 
     void Update()

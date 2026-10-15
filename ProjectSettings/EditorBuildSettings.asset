@@ -14,7 +14,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/MinijuegoCables.unity
     guid: e45e219964dd3984591befa25b4ada34
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/SampleScene_Recuperacion.unity
     guid: b0931e8ab7dc5124bbb69e620d2620b7
   m_configObjects:

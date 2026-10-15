@@ -203,8 +203,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
+  m_fontSize: 36
+  m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -2400,8 +2400,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
+  m_fontSize: 36
+  m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -2631,9 +2631,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NPCDialogue
   lines:
   - "\xA1Hola!, Soy la profesora Gaby Nieva Paredes"
-  - "Yo imparto las materias orientadas a programaci\xF3n"
+  - "Yo imparto las materias orientadas a programaci\xF3n."
+  - "Mi reto para t\xED es que gu\xEDes a mi peque\xF1o robot por un laberinto."
+  - "Utiliza las flechas de direcci\xF3n (\u2190 \u2192 \u2191 \u2193) como instrucciones
+    de control para guiar su camin"
+  - "Utiliza las flechas de direcci\xF3n (\u2190 \u2192 \u2191 \u2193) como instrucciones
+    de control para guiar su camin"
+  - "Recolecta las 5 estrellas y llega a la salida, pero cuidado con tocar los obst\xE1culos."
+  - "\xBFQuieres empezar el minijuego?"
   sceneToLoad: Minijuego_Laberinto
-  victoryLines: []
+  victoryLines:
+  - Lo lograste!, Muy bien, obtuviste la insignia
+  - Ahora puedes seguir avanzando
 --- !u!58 &454442358
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -2731,10 +2740,10 @@ MonoBehaviour:
   m_Transition: 1
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_PressedColor: {r: 0.21960786, g: 0.21960786, b: 0.21960786, a: 1}
+    m_SelectedColor: {r: 0.93329144, g: 1, b: 0, a: 1}
+    m_DisabledColor: {r: 0.95019615, g: 1, b: 0.22352941, a: 0.5019608}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
@@ -2766,7 +2775,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.47058824}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -19924,8 +19933,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 340, y: 90}
+  m_AnchoredPosition: {x: -11, y: 225}
+  m_SizeDelta: {x: 340, y: 94.624}
   m_Pivot: {x: 1, y: 0}
 --- !u!114 &841451784
 MonoBehaviour:
@@ -19940,7 +19949,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.5882353}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -20559,7 +20568,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: -0.04120642}
+  m_Offset: {x: 0, y: -0.035893343}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -20569,7 +20578,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.32, y: 0.39758718}
+  m_Size: {x: 0.32, y: 0.38696086}
   m_EdgeRadius: 0
 --- !u!95 &1237189101
 Animator:
@@ -20798,12 +20807,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1321679118}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -960, y: -507.73993, z: 0}
+  m_LocalScale: {x: 2.3116615, y: 2.3116615, z: 2.3116615}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1561833553}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1356626942
 GameObject:
@@ -20894,12 +20903,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1402418710}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 28.56795, y: -81.73188, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -893.9605, y: -696.67633, z: 0}
+  m_LocalScale: {x: 2.3116615, y: 2.3116615, z: 2.3116615}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1561833553}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1402418713
 MonoBehaviour:
@@ -20908,7 +20917,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1402418710}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f25d17f08f20df74da4a72f01de4f609, type: 3}
   m_Name: 
@@ -20916,9 +20925,14 @@ MonoBehaviour:
   dialoguePanel: {fileID: 2037670782}
   dialogueText: {fileID: 1838779878}
   promptPanel: {fileID: 2044822078}
-  choicePanel: {fileID: 2044822078}
+  choicePanel: {fileID: 841451782}
   yesButton: {fileID: 495643980}
   noButton: {fileID: 1699249609}
+  selectedColor: {r: 1, g: 0.92, b: 0.2, a: 1}
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
+  selectedBgColor: {r: 1, g: 1, b: 1, a: 0.18}
+  selectedScale: 1.12
+  animSpeed: 14
 --- !u!1 &1440463223
 GameObject:
   m_ObjectHideFlags: 0
@@ -66702,6 +66716,8 @@ RectTransform:
   - {fileID: 2037670783}
   - {fileID: 2044822079}
   - {fileID: 841451783}
+  - {fileID: 1402418712}
+  - {fileID: 1321679121}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -67055,8 +67071,8 @@ MonoBehaviour:
   m_Transition: 1
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_PressedColor: {r: 0.21960786, g: 0.21960786, b: 0.21960786, a: 1}
     m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
     m_ColorMultiplier: 1
@@ -67090,7 +67106,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.47058824}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -68155,7 +68171,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -68171,7 +68187,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1.2
+  m_PixelsPerUnitMultiplier: 1.7
 --- !u!222 &2022767201
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -68231,7 +68247,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.78431374}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.5882353}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -68345,6 +68361,4 @@ SceneRoots:
   - {fileID: 1237189103}
   - {fileID: 1883806847}
   - {fileID: 1561833553}
-  - {fileID: 1321679121}
-  - {fileID: 1402418712}
   - {fileID: 1596582991}

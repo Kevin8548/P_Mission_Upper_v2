@@ -4,7 +4,8 @@ using UnityEngine.SceneManagement;
 /// <summary>
 /// Va en la escena "MinijuegoCables", junto al script EthernetMinigame.
 /// Abre el minijuego solo al cargar la escena y, al terminar, regresa al mapa:
-///  - Si ganas, marca EstadoJuego.minijuegoGanado para que el NPC te felicite.
+///  - Si ganas, marca EstadoJuego.minijuegoGanado (y cuál minijuego fue)
+///    para que solo el NPC de este minijuego te felicite.
 ///  - Si sales con la X, regresa sin marcar la victoria.
 /// </summary>
 public class CableMinigameScene : MonoBehaviour
@@ -36,6 +37,9 @@ public class CableMinigameScene : MonoBehaviour
     void OnWon()
     {
         EstadoJuego.minijuegoGanado = true;
+        // Nombre de esta escena (ej. "MinijuegoCables"); debe coincidir con el
+        // "Scene To Load" del NPC que lanza este minijuego.
+        EstadoJuego.minijuegoGanadoEscena = SceneManager.GetActiveScene().name;
         Leave();
     }
 
@@ -49,6 +53,6 @@ public class CableMinigameScene : MonoBehaviour
         if (leaving) return;
         leaving = true;
         Time.timeScale = 1f;
-        SceneManager.LoadScene(returnScene);
+        SceneManager.LoadScene("SampleScene");
     }
 }
