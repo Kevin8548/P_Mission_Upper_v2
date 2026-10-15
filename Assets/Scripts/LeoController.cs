@@ -9,13 +9,28 @@ public class LeoController : MonoBehaviour
     Rigidbody2D rb;
     Animator anim;
     Vector2 move;
-    Vector2 lastDir = new Vector2(0f, -1f);
+    Vector2 lastDir = new Vector2(0f, -1f); // empieza mirando hacia abajo
+    public Vector2 UltimaDireccion { get { return lastDir; } }
     bool running;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+
+        // Si vienes del minijuego, Leo reaparece donde se quedó y mirando hacia el mismo lado
+        if (EstadoJuego.tieneGuardado)
+        {
+            transform.position = EstadoJuego.posicionLeo;
+            lastDir = EstadoJuego.direccionLeo;
+            EstadoJuego.tieneGuardado = false;
+        }
+    }
+
+    void Start()
+    {
+        anim.SetFloat("Horizontal", lastDir.x);
+        anim.SetFloat("Vertical", lastDir.y);
     }
 
     void Update()
@@ -33,11 +48,13 @@ public class LeoController : MonoBehaviour
         }
 
         float x = 0f, y = 0f;
+
         if (k.aKey.isPressed || k.leftArrowKey.isPressed) x -= 1f;
         if (k.dKey.isPressed || k.rightArrowKey.isPressed) x += 1f;
         if (k.sKey.isPressed || k.downArrowKey.isPressed) y -= 1f;
         if (k.wKey.isPressed || k.upArrowKey.isPressed) y += 1f;
 
+        // Sin diagonales: si hay horizontal, se ignora el vertical
         if (x != 0f) y = 0f;
 
         move = new Vector2(x, y);
