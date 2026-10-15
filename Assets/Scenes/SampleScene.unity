@@ -2273,7 +2273,9 @@ MonoBehaviour:
   - "Recolecta las 5 estrellas y llega a la salida, pero cuidado con tocar los obst\xE1culos."
   - "\xBFQuieres empezar el minijuego?"
   sceneToLoad: MiniJuego_Laberinto
-  victoryLines: []
+  victoryLines:
+  - "\xA1Buen trabajo, lo lograste!. Obtuviste una insignia"
+  - Ahora puedes seguir avanzando
 --- !u!58 &454442358
 CircleCollider2D:
   m_ObjectHideFlags: 0
