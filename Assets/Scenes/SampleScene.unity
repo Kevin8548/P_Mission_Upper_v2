@@ -2634,9 +2634,9 @@ MonoBehaviour:
   - "Yo imparto las materias orientadas a programaci\xF3n."
   - "Mi reto para t\xED es que gu\xEDes a mi peque\xF1o robot por un laberinto."
   - "Utiliza las flechas de direcci\xF3n (\u2190 \u2192 \u2191 \u2193) como instrucciones
-    de control para guiar su camin"
+    de control para guiar su camino"
   - "Utiliza las flechas de direcci\xF3n (\u2190 \u2192 \u2191 \u2193) como instrucciones
-    de control para guiar su camin"
+    de control para guiar su camino"
   - "Recolecta las 5 estrellas y llega a la salida, pero cuidado con tocar los obst\xE1culos."
   - "\xBFQuieres empezar el minijuego?"
   sceneToLoad: Minijuego_Laberinto
