@@ -2635,8 +2635,6 @@ MonoBehaviour:
   - "Mi reto para t\xED es que gu\xEDes a mi peque\xF1o robot por un laberinto."
   - "Utiliza las flechas de direcci\xF3n (\u2190 \u2192 \u2191 \u2193) como instrucciones
     de control para guiar su camino"
-  - "Utiliza las flechas de direcci\xF3n (\u2190 \u2192 \u2191 \u2193) como instrucciones
-    de control para guiar su camino"
   - "Recolecta las 5 estrellas y llega a la salida, pero cuidado con tocar los obst\xE1culos."
   - "\xBFQuieres empezar el minijuego?"
   sceneToLoad: Minijuego_Laberinto
@@ -20085,7 +20083,7 @@ Transform:
   m_GameObject: {fileID: 1067091925}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.0022222733, y: -0.06444423, z: 0}
+  m_LocalPosition: {x: 0.0022222733, y: 0.243, z: 0}
   m_LocalScale: {x: 0.14605592, y: 0.16167873, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -20448,7 +20446,7 @@ Transform:
   m_GameObject: {fileID: 1171893266}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.004, y: -0.08, z: 0}
+  m_LocalPosition: {x: 0.008, y: 0.226, z: 0}
   m_LocalScale: {x: 0.14605592, y: 0.16167873, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -67157,7 +67155,7 @@ Transform:
   m_GameObject: {fileID: 1734754290}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.004, y: -0.048, z: 0}
+  m_LocalPosition: {x: 0, y: 0.254, z: 0}
   m_LocalScale: {x: 0.14605594, y: 0.16167875, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -67249,7 +67247,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0.005592891, y: -0.06334141, z: 0}
-  m_LocalScale: {x: 0.1369, y: 0.13242856, z: 1}
+  m_LocalScale: {x: 0.136, y: 0.132428, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1153071643}
@@ -67339,7 +67337,7 @@ Transform:
   m_GameObject: {fileID: 1780916101}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.02, y: -0.09, z: 0}
+  m_LocalPosition: {x: 0.016, y: 0.221, z: 0}
   m_LocalScale: {x: 0.14605595, y: 0.16167876, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
