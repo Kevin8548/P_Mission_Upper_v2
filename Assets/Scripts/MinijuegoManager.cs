@@ -68,6 +68,7 @@ public class MinijuegoManager : MonoBehaviour
         {
             Jugando = false;
             EstadoJuego.minijuegoGanado = true;
+            EstadoJuego.minijuegoGanadoEscena = SceneManager.GetActiveScene().name;
             MostrarFin("¡OBJETIVO CUMPLIDO!", "ESTRELLAS: " + estrellas + "/" + total, iconoEstrella, Color.white);
         }
         else

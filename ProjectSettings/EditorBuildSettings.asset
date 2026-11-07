@@ -18,8 +18,13 @@ EditorBuildSettings:
     path: Assets/Scenes/SampleScene_Recuperacion.unity
     guid: b0931e8ab7dc5124bbb69e620d2620b7
   - enabled: 1
+<<<<<<< HEAD
     path: Assets/Scenes/Minijuego_Rompecabezas.unity
     guid: 9b6803d5f72eb7b48a52cc56d962a700
+=======
+    path: Assets/Scenes/Minijuego_Oracle.unity
+    guid: 73a7554cc70e0bb4ca76cad2e0c86e62
+>>>>>>> cb5ecae3c3afd061a470588d4f488dfa5d140609
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0
