@@ -20568,7 +20568,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: -0.035893343}
+  m_Offset: {x: 0, y: -0.0982551}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -20578,7 +20578,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.32, y: 0.38696086}
+  m_Size: {x: 0.32, y: 0.5116844}
   m_EdgeRadius: 0
 --- !u!95 &1237189101
 Animator:
@@ -67720,8 +67720,14 @@ MonoBehaviour:
   lines:
   - "\xA1Hola!, Soy la profesora Margarita Lima Esteban"
   - "Y tengo un reto para t\xED"
-  sceneToLoad: 
-  victoryLines: []
+  - Deberas armar un rompecabezas para obtener la siguiente medalla
+  - Donde deberas arrastrar cada parte del rompecabezas en su parte correspondiente
+  - "\xBFEstas listo?"
+  sceneToLoad: Minijuego_Rompecabezas
+  victoryLines:
+  - Felicidades has terminado el rompecabezas
+  - Has conseguido la medalla de (sepa)
+  - Ahora puedes continuar tu camino
 --- !u!58 &1883806849
 CircleCollider2D:
   m_ObjectHideFlags: 0
