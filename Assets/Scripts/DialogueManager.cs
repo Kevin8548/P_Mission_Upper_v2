@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -26,10 +27,15 @@ public class DialogueManager : MonoBehaviour
     public float selectedScale = 1.12f;                          // el botón elegido crece un poco
     public float animSpeed = 14f;                                // qué tan rápido se anima el cambio
 
+    [Header("Sonido")]
+    public AudioClip clickClip;                                  // sonidito tipo botón
+    [Range(0f, 1f)] public float clickVolume = 0.7f;
+
     string[] currentLines;
     int index;
     string sceneToLoad;
     int choiceIndex;
+    AudioSource audioSource;
 
     public bool IsActive { get; private set; }
     public bool IsChoosing { get; private set; }
@@ -38,6 +44,13 @@ public class DialogueManager : MonoBehaviour
     {
         Instance = this;
         Debug.Log("[Dialogo] Script v5 cargado");
+
+        // AudioSource propio (2D) para el click; si ya tiene uno, lo reutiliza
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 0f;
+
         dialoguePanel.SetActive(false);
         promptPanel.SetActive(false);
         choicePanel.SetActive(false);
@@ -52,8 +65,9 @@ public class DialogueManager : MonoBehaviour
         yesButton.navigation = nav;
         noButton.navigation = nav;
 
-        yesButton.onClick.AddListener(OnYes);
-        noButton.onClick.AddListener(OnNo);
+        // Con clic del mouse también suena (si ya se confirmó con teclado, IsChoosing es false y no repite)
+        yesButton.onClick.AddListener(() => { if (IsChoosing) Click(); OnYes(); });
+        noButton.onClick.AddListener(() => { if (IsChoosing) Click(); OnNo(); });
 
         // Con el mouse: al pasar encima se selecciona esa opción
         AddHover(yesButton, 0);
@@ -103,6 +117,13 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
+    // Sonidito de botón
+    void Click()
+    {
+        if (clickClip != null && audioSource != null)
+            audioSource.PlayOneShot(clickClip, clickVolume);
+    }
+
     public void ShowPrompt(bool show)
     {
         if (promptPanel == null) return;
@@ -113,6 +134,9 @@ public class DialogueManager : MonoBehaviour
     public void StartDialogue(string[] lines, string scene = "")
     {
         if (lines == null || lines.Length == 0) return;
+
+        // Suena solo si el diálogo lo inicia la tecla E (no cuando se abre solo al regresar del minijuego)
+        if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame) Click();
 
         currentLines = lines;
         sceneToLoad = scene;
@@ -128,6 +152,7 @@ public class DialogueManager : MonoBehaviour
     {
         if (IsChoosing) return;
 
+        Click();
         index++;
 
         if (index >= currentLines.Length)
@@ -212,6 +237,9 @@ public class DialogueManager : MonoBehaviour
 
     public void ConfirmChoice()
     {
+        if (!IsChoosing) return;
+
+        Click();
         if (choiceIndex == 0) OnYes();
         else OnNo();
     }
@@ -234,6 +262,14 @@ public class DialogueManager : MonoBehaviour
             EstadoJuego.tieneGuardado = true;
         }
 
+        // Pequeña espera para que alcance a sonar el click antes de cambiar de escena
+        if (clickClip != null) StartCoroutine(CargarEscenaConRetraso());
+        else SceneManager.LoadScene(sceneToLoad);
+    }
+
+    IEnumerator CargarEscenaConRetraso()
+    {
+        yield return new WaitForSecondsRealtime(Mathf.Min(clickClip.length, 0.25f));
         SceneManager.LoadScene(sceneToLoad);
     }
 
