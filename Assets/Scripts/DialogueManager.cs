@@ -133,7 +133,8 @@ public class DialogueManager : MonoBehaviour
 
     public void StartDialogue(string[] lines, string scene = "")
     {
-        if (StoryboardFinal.Activo) return;   // <-- NUEVA: no abrir diálogos mientras el storyboard está abierto
+        // No abrir diálogos mientras el storyboard final o la pausa están activos
+        if (StoryboardFinal.Activo || PausaMenu.Pausado) return;   // <-- CAMBIO
         if (lines == null || lines.Length == 0) return;
 
         // Suena solo si el diálogo lo inicia la tecla E (no cuando se abre solo al regresar del minijuego)
