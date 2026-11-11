@@ -9,22 +9,16 @@ EditorBuildSettings:
     path: Assets/Scenes/SampleScene.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
   - enabled: 1
+    path: Assets/Scenes/Minijuego_Rompecabezas.unity
+    guid: 9b6803d5f72eb7b48a52cc56d962a700
+  - enabled: 1
+    path: Assets/Scenes/Minijuego_Oracle.unity
+    guid: 73a7554cc70e0bb4ca76cad2e0c86e62
+  - enabled: 1
     path: Assets/Scenes/MiniJuego_Laberinto.unity
     guid: 9afbd54299ae3dc458c09a59627a6e2f
   - enabled: 1
     path: Assets/Scenes/MinijuegoCables.unity
     guid: e45e219964dd3984591befa25b4ada34
-  - enabled: 1
-    path: Assets/Scenes/SampleScene_Recuperacion.unity
-    guid: b0931e8ab7dc5124bbb69e620d2620b7
-  - enabled: 1
-<<<<<<< HEAD
-    path: Assets/Scenes/Minijuego_Rompecabezas.unity
-    guid: 9b6803d5f72eb7b48a52cc56d962a700
-=======
-    path: Assets/Scenes/Minijuego_Oracle.unity
-    guid: 73a7554cc70e0bb4ca76cad2e0c86e62
->>>>>>> cb5ecae3c3afd061a470588d4f488dfa5d140609
-  m_configObjects:
-    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

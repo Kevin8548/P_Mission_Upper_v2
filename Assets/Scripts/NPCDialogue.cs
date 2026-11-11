@@ -25,6 +25,10 @@ public class NPCDialogue : MonoBehaviour
 
     void Start()
     {
+        // DIAGNOSTICO (puedes borrar esta línea cuando todo funcione)
+        if (victoryLines != null && victoryLines.Length > 0)
+            Debug.Log("[NPC " + name + "] ganado=" + EstadoJuego.minijuegoGanado + " | escenaGanada='" + EstadoJuego.minijuegoGanadoEscena + "' | mi sceneToLoad='" + sceneToLoad + "'");
+
         // Diálogo al regresar de ganar el minijuego
         if (!EstadoJuego.minijuegoGanado) return;
         if (string.IsNullOrEmpty(sceneToLoad)) return;
