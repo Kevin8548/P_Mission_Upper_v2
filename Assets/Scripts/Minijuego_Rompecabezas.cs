@@ -10,7 +10,7 @@ using UnityEngine.UI;
 // Minijuego del rompecabezas (profe Mago).
 // Uso: GameObject vacio en una escena nueva + este script + arrastrar la imagen al campo "Imagen".
 // Necesita un EventSystem en la escena (GameObject > UI > Event System).
-// Todo (fondo, recuadro, piezas, arrastre) se construye por codigo.
+// Todo (fondo, recuadro, piezas, arrastre, corazones, cronometro, pantalla de derrota) se construye por codigo.
 public class RompecabezasManager : MonoBehaviour
 {
     [Header("Imagen del rompecabezas")]
@@ -24,10 +24,20 @@ public class RompecabezasManager : MonoBehaviour
     public int grosorBorde = 2;                                  // contorno oscuro de cada pieza (en px de la imagen)
     public float distanciaIman = 55f;                            // que tan cerca hay que soltarla para que encaje
 
+    [Header("Tiempo y corazones")]
+    public float tiempoTotal = 60f;                              // 1 minuto
+    public float tiempoCorazon1 = 30f;                           // al llegar a este tiempo restante pierde el 1er corazon
+    public float tiempoCorazon2 = 15f;                           // al llegar a este tiempo restante pierde el 2do corazon
+                                                                 // al llegar a 0 pierde el 3er corazon y el juego
+
     [Header("Pantalla")]
-    [Range(0.4f, 0.85f)] public float alturaTablero = 0.66f;     // alto del tablero respecto al recuadro
+    [Range(0.5f, 0.98f)] public float tamanoTablero = 0.94f;     // alto del tablero respecto a la zona de juego
+    [Range(0.4f, 0.92f)] public float anchoTablero = 0.62f;      // ancho maximo del tablero (deja espacio a los lados para las piezas)
+    [Range(0f, 1f)] public float opacidadPanel = 0.40f;          // 0 = totalmente transparente, 1 = solido
     public Color colorFondoArriba = new Color32(16, 32, 61, 255);
     public Color colorFondoAbajo = new Color32(38, 142, 108, 255);
+    public Color colorAtardecerArriba = new Color32(70, 30, 110, 255);   // 2do cielo que se mezcla poco a poco
+    public Color colorAtardecerAbajo = new Color32(240, 120, 90, 255);
     public Color colorMarco = new Color32(236, 240, 228, 255);
     public Color colorPanel = new Color32(26, 38, 66, 255);
     public TMP_FontAsset fuente;                                 // opcional: la misma fuente de tu DialogueManager
@@ -35,10 +45,7 @@ public class RompecabezasManager : MonoBehaviour
     [Header("Al terminar")]
     public string escenaDeRegreso = "SampleScene";               // nombre de tu escena principal
     public UnityEvent alCompletar;
-
-    [Header("Tiempo (para poder perder)")]
-    [Tooltip("Segundos para armar el rompecabezas. 0 = sin límite (entonces nunca se pierde).")]
-    public float tiempoLimite = 180f;
+    public UnityEvent alPerder;
 
     struct Borde
     {
@@ -46,17 +53,46 @@ public class RompecabezasManager : MonoBehaviour
         public float offArr, offDer, offAba, offIzq;             // desfase de la pestana a lo largo del borde
     }
 
-    RectTransform mesa, piezasRoot, completa;
-    RawImage fondoRaw, completaRaw;
-    TextMeshProUGUI contador;
+    class CapaFondo
+    {
+        public RawImage raw;
+        public float vel;
+        public float pos;
+    }
+
+    // Fondo
+    const int FW = 240, FH = 135;                                // cada pixel = 8 px en 1920x1080
+    const int NumLuces = 32;
+    readonly List<CapaFondo> capas = new List<CapaFondo>();
+    RawImage atardecerRaw, estrellasA, estrellasB;
+    RectTransform lunaRT;
+    RectTransform[] lucesRT;
+    Image[] lucesIm;
+    Vector2[] lucesPos;
+    float[] lucesVel, lucesFase, lucesAmp;
+    RectTransform fugazRT;
+    Image fugazIm;
+    float fugazT = -1f, fugazEspera = 3f;
+    Vector2 fugazIni;
+
+    // UI
+    RectTransform canvasRT, mesa, piezasRoot, completa, tituloRT, cronoRT, barraRect;
+    RawImage completaRaw;
+    TextMeshProUGUI contador, cronometro;
+    Image barraRelleno, flash;
+    Sprite corazonLleno, corazonVacio;
+    readonly List<Image> corazones = new List<Image>();
+
     Texture2D legible;
     readonly List<PiezaRompecabezas> piezas = new List<PiezaRompecabezas>();
     readonly List<Object> temporales = new List<Object>();
     int colocadas;
-    float scroll;
-    float tiempoRestante;
-    int ultimoSegundo = -1;
+
+    // Estado
     bool jugando;
+    float tiempo;
+    int vidas = 3;
+    bool perdioC1, perdioC2;
     MenuFinal menu;
 
     public bool Jugando { get { return jugando; } }
@@ -71,32 +107,40 @@ public class RompecabezasManager : MonoBehaviour
         if (FindFirstObjectByType<EventSystem>() == null)
             Debug.LogWarning("RompecabezasManager: falta un EventSystem (GameObject > UI > Event System).");
 
+        tiempo = tiempoTotal;
+        vidas = 3;
         ConstruirPantalla();
         yield return null;                 // esperamos un frame para que el Canvas calcule tamanos
         Canvas.ForceUpdateCanvases();
         ConstruirPiezas();
-        tiempoRestante = tiempoLimite;
-        jugando = true;
-        ActualizarContador();
+        jugando = true;                    // el reloj arranca cuando ya estan las piezas
     }
 
     void Update()
     {
-        if (fondoRaw == null) return;
-        scroll = (scroll + 0.01f * Time.unscaledDeltaTime) % 1f;   // las nubes se mueven muy despacio
-        fondoRaw.uvRect = new Rect(scroll, 0f, 1f, 1f);
+        AnimarFondo();
+        AnimarTitulo();
+        if (!jugando) return;
 
-        // Cuenta regresiva: si llega a 0 antes de terminar, se pierde
-        if (jugando && tiempoLimite > 0f)
+        tiempo -= Time.unscaledDeltaTime;
+
+        if (!perdioC1 && tiempo <= tiempoCorazon1) { perdioC1 = true; QuitarCorazon(); }
+        if (!perdioC2 && tiempo <= tiempoCorazon2) { perdioC2 = true; QuitarCorazon(); }
+
+        if (tiempo <= 0f)
         {
-            tiempoRestante -= Time.unscaledDeltaTime;
-            if (tiempoRestante <= 0f) { tiempoRestante = 0f; Perder(); }
-            else
-            {
-                int seg = Mathf.CeilToInt(tiempoRestante);
-                if (seg != ultimoSegundo) { ultimoSegundo = seg; ActualizarContador(); }
-            }
+            tiempo = 0f;
+            ActualizarTiempoUI();
+            QuitarCorazon();               // el 3er corazon
+            Perder();
+            return;
         }
+
+        ActualizarTiempoUI();
+
+        // Ultimo corazon latiendo
+        if (vidas == 1 && corazones.Count > 0)
+            corazones[0].rectTransform.localScale = Vector3.one * (1f + 0.12f * Mathf.Sin(Time.unscaledTime * 8f));
     }
 
     void OnDestroy()
@@ -110,6 +154,7 @@ public class RompecabezasManager : MonoBehaviour
     {
         var cgo = new GameObject("CanvasRompecabezas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
         cgo.transform.SetParent(transform, false);
+        canvasRT = cgo.GetComponent<RectTransform>();
         var canvas = cgo.GetComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = 100;
@@ -118,112 +163,644 @@ public class RompecabezasManager : MonoBehaviour
         scaler.referenceResolution = new Vector2(1920, 1080);
         scaler.matchWidthOrHeight = 0.5f;
 
-        // Fondo pixel
-        var fondo = NuevoUI("Fondo", cgo.transform);
-        Estirar(fondo, 0);
-        fondoRaw = fondo.gameObject.AddComponent<RawImage>();
-        fondoRaw.texture = CrearFondo();
-        fondoRaw.raycastTarget = false;
+        // Fondo animado (cielo, estrellas, luna, nubes, colinas, luciernagas, estrella fugaz)
+        ConstruirFondo(cgo.transform);
 
-        // Recuadro grande (marco claro > borde oscuro > panel)
+        // Marco: solo el contorno (claro + oscuro), el interior es translucido para ver el fondo
         var marco = NuevoUI("Marco", cgo.transform);
-        marco.anchorMin = new Vector2(0.05f, 0.06f);
-        marco.anchorMax = new Vector2(0.95f, 0.94f);
+        marco.anchorMin = new Vector2(0.02f, 0.03f);
+        marco.anchorMax = new Vector2(0.98f, 0.97f);
         marco.offsetMin = marco.offsetMax = Vector2.zero;
-        Img(marco, colorMarco);
+        Marco4(marco, 8f, 0f, colorMarco);
+        Marco4(marco, 6f, 8f, new Color32(18, 24, 44, 255));
 
-        var borde = NuevoUI("Borde", marco);
-        Estirar(borde, 8);
-        Img(borde, new Color32(18, 24, 44, 255));
+        var panel = NuevoUI("Panel", marco);
+        Estirar(panel, 14);
+        Color pc = colorPanel;
+        pc.a = opacidadPanel;
+        Img(panel, pc);
 
-        var panel = NuevoUI("Panel", borde);
-        Estirar(panel, 6);
-        Img(panel, colorPanel);
+        // ── Titulo ──
+        tituloRT = NuevoUI("Titulo", panel);
+        tituloRT.anchorMin = new Vector2(0f, 1f);
+        tituloRT.anchorMax = new Vector2(1f, 1f);
+        tituloRT.pivot = new Vector2(0.5f, 1f);
+        tituloRT.anchoredPosition = new Vector2(0f, -8f);
+        tituloRT.sizeDelta = new Vector2(0f, 80f);
 
-        // Contador de piezas
-        var cRT = NuevoUI("Contador", panel);
-        cRT.anchorMin = new Vector2(0f, 1f);
-        cRT.anchorMax = new Vector2(1f, 1f);
-        cRT.pivot = new Vector2(0.5f, 1f);
-        cRT.anchoredPosition = new Vector2(0f, -12f);
-        cRT.sizeDelta = new Vector2(0f, 64f);
-        contador = cRT.gameObject.AddComponent<TextMeshProUGUI>();
-        if (fuente != null) contador.font = fuente;
-        contador.fontSize = 40;
-        contador.fontStyle = FontStyles.Bold;
-        contador.alignment = TextAlignmentOptions.Center;
-        contador.color = Color.white;
-        contador.raycastTarget = false;
+        var tSombra = CrearTexto("Sombra", tituloRT, 64, new Color(0f, 0f, 0f, 0.6f), TextAlignmentOptions.Center);
+        Estirar(tSombra.rectTransform, 0);
+        tSombra.rectTransform.offsetMin = new Vector2(4f, -4f);
+        tSombra.rectTransform.offsetMax = new Vector2(4f, -4f);
+        tSombra.characterSpacing = 8f;
+        tSombra.text = "ARMA EL ROMPECABEZAS";
 
-        // Zona donde viven tablero y piezas
+        var tTexto = CrearTexto("Texto", tituloRT, 64, Color.white, TextAlignmentOptions.Center);
+        Estirar(tTexto.rectTransform, 0);
+        tTexto.characterSpacing = 8f;
+        tTexto.enableVertexGradient = true;
+        Color32 g1 = new Color32(255, 244, 160, 255), g2 = new Color32(255, 160, 60, 255);
+        tTexto.colorGradient = new VertexGradient(g1, g1, g2, g2);
+        tTexto.text = "ARMA EL ROMPECABEZAS";
+
+        // ── Corazones (pastilla a la izquierda) ──
+        corazonLleno = CrearCorazon(true);
+        corazonVacio = CrearCorazon(false);
+        var hRT = Pastilla(panel, "Corazones", new Vector2(0f, 1f), new Vector2(30f, -12f), new Vector2(240f, 66f));
+        for (int i = 0; i < 3; i++)
+        {
+            var c = NuevoUI("Corazon" + i, hRT);
+            c.anchorMin = c.anchorMax = c.pivot = new Vector2(0f, 0.5f);
+            c.anchoredPosition = new Vector2(30f + i * 66f, 0f);
+            c.sizeDelta = new Vector2(52f, 48f);
+            var im = c.gameObject.AddComponent<Image>();
+            im.sprite = corazonLleno;
+            im.raycastTarget = false;
+            corazones.Add(im);
+        }
+
+        // ── Contador de piezas (pastilla a la derecha) ──
+        var cPill = Pastilla(panel, "ContadorPill", new Vector2(1f, 1f), new Vector2(-30f, -12f), new Vector2(340f, 66f));
+        contador = CrearTexto("Contador", cPill, 34, Color.white, TextAlignmentOptions.Center);
+        Estirar(contador.rectTransform, 0);
+
+        // ── Barra de tiempo con el cronometro adentro ──
+        var bRT = NuevoUI("Barra", panel);
+        bRT.anchorMin = new Vector2(0f, 1f);
+        bRT.anchorMax = new Vector2(1f, 1f);
+        bRT.pivot = new Vector2(0.5f, 1f);
+        bRT.anchoredPosition = new Vector2(0f, -94f);
+        bRT.sizeDelta = new Vector2(-60f, 38f);
+        Img(bRT, new Color32(10, 14, 30, 230));
+        barraRect = NuevoUI("Relleno", bRT);
+        Estirar(barraRect, 4);
+        barraRelleno = Img(barraRect, new Color32(80, 220, 140, 255));
+
+        cronometro = CrearTexto("Cronometro", bRT, 30, Color.white, TextAlignmentOptions.Center);
+        cronoRT = cronometro.rectTransform;
+        Estirar(cronoRT, 0);
+
+        // Zona donde viven tablero y piezas (debajo del encabezado)
         mesa = NuevoUI("Mesa", panel);
         Estirar(mesa, 0);
+        mesa.offsetMin = new Vector2(10f, 10f);
+        mesa.offsetMax = new Vector2(-10f, -142f);
+
+        // Destello rojo cuando se pierde un corazon (encima de todo, no bloquea clics)
+        var fRT = NuevoUI("Flash", canvasRT);
+        Estirar(fRT, 0);
+        flash = Img(fRT, new Color(1f, 0.1f, 0.1f, 0f));
+
+        ActualizarTiempoUI();
+        ActualizarContador();
     }
 
-    Texture2D CrearFondo()
+    // Cuatro tiras que forman un contorno hueco (deja ver lo que hay detras)
+    static void Marco4(RectTransform padre, float grosor, float inset, Color color)
     {
-        const int w = 240, h = 135;                      // cada pixel = 8 px en 1920x1080
-        const int niveles = 7;
-        var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+        var t = NuevoUI("Arriba", padre);
+        t.anchorMin = new Vector2(0f, 1f); t.anchorMax = new Vector2(1f, 1f);
+        t.offsetMin = new Vector2(inset, -inset - grosor); t.offsetMax = new Vector2(-inset, -inset);
+        Img(t, color);
+
+        var b = NuevoUI("Abajo", padre);
+        b.anchorMin = new Vector2(0f, 0f); b.anchorMax = new Vector2(1f, 0f);
+        b.offsetMin = new Vector2(inset, inset); b.offsetMax = new Vector2(-inset, inset + grosor);
+        Img(b, color);
+
+        var l = NuevoUI("Izq", padre);
+        l.anchorMin = new Vector2(0f, 0f); l.anchorMax = new Vector2(0f, 1f);
+        l.offsetMin = new Vector2(inset, inset); l.offsetMax = new Vector2(inset + grosor, -inset);
+        Img(l, color);
+
+        var r = NuevoUI("Der", padre);
+        r.anchorMin = new Vector2(1f, 0f); r.anchorMax = new Vector2(1f, 1f);
+        r.offsetMin = new Vector2(-inset - grosor, inset); r.offsetMax = new Vector2(-inset, -inset);
+        Img(r, color);
+    }
+
+    // Cajita oscura translucida con borde claro (para corazones y contador)
+    RectTransform Pastilla(Transform padre, string nombre, Vector2 ancla, Vector2 pos, Vector2 tam)
+    {
+        var rt = NuevoUI(nombre, padre);
+        rt.anchorMin = rt.anchorMax = rt.pivot = ancla;
+        rt.anchoredPosition = pos;
+        rt.sizeDelta = tam;
+        Img(rt, new Color(colorMarco.r, colorMarco.g, colorMarco.b, 0.9f));
+        var inner = NuevoUI("Fondo", rt);
+        Estirar(inner, 4);
+        Img(inner, new Color32(10, 16, 34, 215));
+        return rt;
+    }
+
+    // ───────────────────────── FONDO DINAMICO ─────────────────────────
+
+    void ConstruirFondo(Transform padre)
+    {
+        var raiz = NuevoUI("Fondo", padre);
+        Estirar(raiz, 0);
+
+        // Cielo base + 2do cielo (atardecer) que se mezcla lento
+        NuevaCapa(raiz, "Cielo", NuevaTex(CrearGradiente(colorFondoArriba, colorFondoAbajo)), 0f);
+        atardecerRaw = NuevaCapa(raiz, "Atardecer", NuevaTex(CrearGradiente(colorAtardecerArriba, colorAtardecerAbajo)), 0f);
+        atardecerRaw.color = new Color(1f, 1f, 1f, 0f);
+
+        // Estrellas que titilan (dos capas con fase distinta)
+        estrellasA = NuevaCapa(raiz, "EstrellasA", NuevaTex(CrearEstrellas(777, 44)), 0f);
+        estrellasB = NuevaCapa(raiz, "EstrellasB", NuevaTex(CrearEstrellas(4242, 44)), 0f);
+
+        // Luna pixelada flotando suave
+        var lunaTex = CrearLuna();
+        lunaRT = NuevoUI("Luna", raiz);
+        lunaRT.anchorMin = lunaRT.anchorMax = new Vector2(0.92f, 0.72f);
+        lunaRT.sizeDelta = new Vector2(170f, 170f);
+        var lunaIm = lunaRT.gameObject.AddComponent<Image>();
+        var lunaSp = Sprite.Create(lunaTex, new Rect(0, 0, lunaTex.width, lunaTex.height), new Vector2(0.5f, 0.5f), 100f);
+        temporales.Add(lunaSp);
+        lunaIm.sprite = lunaSp;
+        lunaIm.raycastTarget = false;
+
+        // Nubes lejanas y medias (parallax)
+        NuevaCapa(raiz, "NubesLejanas", NuevaTex(CrearNubes(11, 7, 14, 24, 0.50f, 0.90f, 70)), 0.004f);
+        NuevaCapa(raiz, "NubesMedias", NuevaTex(CrearNubes(22, 5, 22, 36, 0.35f, 0.80f, 105)), 0.009f);
+
+        // Colinas pixeladas en movimiento
+        Color colLejana = Color.Lerp(colorFondoAbajo, colorFondoArriba, 0.45f);
+        Color colCercana = Color.Lerp(colorFondoAbajo, Color.black, 0.5f);
+        NuevaCapa(raiz, "ColinasLejanas", NuevaTex(CrearColinas(colLejana, 30, 7, 3, 4, 1, 0.5f)), 0.006f);
+        NuevaCapa(raiz, "ColinasCercanas", NuevaTex(CrearColinas(colCercana, 16, 5, 2, 7, 2, 1.7f)), 0.014f);
+
+        // Nubes cercanas (pasan por delante de las colinas)
+        NuevaCapa(raiz, "NubesCercanas", NuevaTex(CrearNubes(33, 4, 30, 46, 0.25f, 0.60f, 85)), 0.016f);
+
+        // Luciernagas / particulas flotando hacia arriba
+        lucesRT = new RectTransform[NumLuces];
+        lucesIm = new Image[NumLuces];
+        lucesPos = new Vector2[NumLuces];
+        lucesVel = new float[NumLuces];
+        lucesFase = new float[NumLuces];
+        lucesAmp = new float[NumLuces];
+        for (int i = 0; i < NumLuces; i++)
+        {
+            var rt = NuevoUI("Luz" + i, raiz);
+            float s = Random.Range(5f, 12f);
+            rt.sizeDelta = new Vector2(s, s);
+            var im = rt.gameObject.AddComponent<Image>();
+            im.raycastTarget = false;
+            im.color = Random.value < 0.6f ? new Color32(255, 240, 160, 255) : new Color32(160, 255, 225, 255);
+            lucesRT[i] = rt; lucesIm[i] = im;
+            lucesPos[i] = new Vector2(Random.value, Random.value);
+            lucesVel[i] = Random.Range(0.012f, 0.04f);
+            lucesFase[i] = Random.Range(0f, 6.28f);
+            lucesAmp[i] = Random.Range(0.005f, 0.02f);
+        }
+
+        // Estrella fugaz
+        fugazRT = NuevoUI("Fugaz", raiz);
+        fugazRT.sizeDelta = new Vector2(110f, 4f);
+        fugazRT.localRotation = Quaternion.Euler(0f, 0f, 24f);
+        fugazIm = fugazRT.gameObject.AddComponent<Image>();
+        fugazIm.raycastTarget = false;
+        fugazIm.color = new Color(1f, 1f, 1f, 0f);
+    }
+
+    RawImage NuevaCapa(RectTransform padre, string nombre, Texture2D tex, float vel)
+    {
+        var rt = NuevoUI(nombre, padre);
+        Estirar(rt, 0);
+        var raw = rt.gameObject.AddComponent<RawImage>();
+        raw.texture = tex;
+        raw.raycastTarget = false;
+        if (vel != 0f) capas.Add(new CapaFondo { raw = raw, vel = vel, pos = Random.value });
+        return raw;
+    }
+
+    Texture2D NuevaTex(Color32[] px)
+    {
+        var tex = new Texture2D(FW, FH, TextureFormat.RGBA32, false);
         tex.filterMode = FilterMode.Point;
         tex.wrapMode = TextureWrapMode.Repeat;
+        tex.SetPixels32(px);
+        tex.Apply();
         temporales.Add(tex);
+        return tex;
+    }
 
+    // Degradado por bandas planas con costuras tramadas (dither)
+    Color32[] CrearGradiente(Color arriba, Color abajo)
+    {
+        const int niveles = 8;
         var paleta = new Color32[niveles];
         for (int i = 0; i < niveles; i++)
-            paleta[i] = Color.Lerp(colorFondoArriba, colorFondoAbajo, i / (float)(niveles - 1));
+            paleta[i] = Color.Lerp(arriba, abajo, i / (float)(niveles - 1));
 
         int[,] bayer = { { 0, 8, 2, 10 }, { 12, 4, 14, 6 }, { 3, 11, 1, 9 }, { 15, 7, 13, 5 } };
-        var px = new Color32[w * h];
-
-        // Degradado por bandas planas con costuras tramadas (dither)
-        for (int y = 0; y < h; y++)
+        var px = new Color32[FW * FH];
+        for (int y = 0; y < FH; y++)
         {
-            float k = 1f - y / (float)(h - 1);           // y = 0 es abajo
+            float k = 1f - y / (float)(FH - 1);          // y = 0 es abajo
             float nivel = k * (niveles - 1);
             int baseIdx = Mathf.FloorToInt(nivel);
             float frac = nivel - baseIdx;
             float f = Mathf.Clamp01((frac - 0.35f) / 0.3f);
-            for (int x = 0; x < w; x++)
+            for (int x = 0; x < FW; x++)
             {
                 float umbral = (bayer[y % 4, x % 4] + 0.5f) / 16f;
                 int idx = Mathf.Clamp(baseIdx + (f > umbral ? 1 : 0), 0, niveles - 1);
-                px[y * w + x] = paleta[idx];
+                px[y * FW + x] = paleta[idx];
             }
         }
+        return px;
+    }
 
-        // Estrellitas arriba y nubes pixeladas sutiles
-        var rnd = new System.Random(12345);
-        for (int i = 0; i < 45; i++)
-            Aclarar(px, w, h, rnd.Next(0, w), rnd.Next((int)(h * 0.55f), h - 2), 0.55f);
-        int[] nubesX = { 20, 70, 120, 170, 215 };
-        foreach (int nx in nubesX)
-            Nube(px, w, h, nx + rnd.Next(-8, 9), rnd.Next((int)(h * 0.4f), (int)(h * 0.85f)), rnd.Next(22, 37));
+    Color32[] CrearEstrellas(int semilla, int cantidad)
+    {
+        var px = new Color32[FW * FH];                   // todo transparente
+        var rnd = new System.Random(semilla);
+        for (int i = 0; i < cantidad; i++)
+        {
+            int x = rnd.Next(0, FW);
+            int y = rnd.Next((int)(FH * 0.5f), FH - 2);
+            Poner(px, x, y, new Color32(255, 255, 255, 255));
+            if (rnd.NextDouble() < 0.25)                 // algunas son cruz
+            {
+                var c = new Color32(255, 255, 255, 120);
+                Poner(px, x + 1, y, c); Poner(px, x - 1, y, c);
+                Poner(px, x, y + 1, c); Poner(px, x, y - 1, c);
+            }
+        }
+        return px;
+    }
 
+    // Luna en cuarto creciente con un halo suave
+    Texture2D CrearLuna()
+    {
+        const int n = 20;
+        var px = new Color32[n * n];
+        for (int y = 0; y < n; y++)
+            for (int x = 0; x < n; x++)
+            {
+                float dx = x - 9.5f, dy = y - 9.5f;
+                float d = Mathf.Sqrt(dx * dx + dy * dy);
+                float ex = x - 12.5f, ey = y - 11f;
+                float de = Mathf.Sqrt(ex * ex + ey * ey);
+                if (d <= 7f && de > 6f) px[y * n + x] = new Color32(255, 246, 200, 255);
+                else if (d <= 9.5f) px[y * n + x] = new Color32(255, 246, 200, 38);
+                else px[y * n + x] = new Color32(0, 0, 0, 0);
+            }
+        var tex = new Texture2D(n, n, TextureFormat.RGBA32, false);
+        tex.filterMode = FilterMode.Point;
+        tex.wrapMode = TextureWrapMode.Clamp;
         tex.SetPixels32(px);
         tex.Apply();
+        temporales.Add(tex);
         return tex;
     }
 
-    static void Nube(Color32[] px, int w, int h, int cx, int cy, int ancho)
+    Color32[] CrearNubes(int semilla, int cantidad, int anchoMin, int anchoMax, float yMin, float yMax, byte alfa)
     {
-        Banda(px, w, h, cx - ancho / 2, cy, ancho, 3, 0.15f);
-        Banda(px, w, h, cx - ancho / 3, cy + 3, ancho * 2 / 3, 3, 0.15f);
-        Banda(px, w, h, cx - ancho / 6, cy + 6, ancho / 3, 2, 0.15f);
+        var px = new Color32[FW * FH];
+        var rnd = new System.Random(semilla);
+        for (int i = 0; i < cantidad; i++)
+        {
+            int cx = (FW / cantidad) * i + rnd.Next(-8, 9);
+            int cy = rnd.Next((int)(FH * yMin), (int)(FH * yMax));
+            int ancho = rnd.Next(anchoMin, anchoMax + 1);
+            Banda(px, cx - ancho / 2, cy, ancho, 3, alfa);
+            Banda(px, cx - ancho / 3, cy + 3, ancho * 2 / 3, 3, alfa);
+            Banda(px, cx - ancho / 6, cy + 6, ancho / 3, 2, alfa);
+        }
+        return px;
     }
 
-    static void Banda(Color32[] px, int w, int h, int x0, int y0, int bw, int bh, float cant)
+    // f1 y f2 deben ser enteros para que el scroll sea continuo
+    Color32[] CrearColinas(Color color, int baseAlto, int a1, int a2, int f1, int f2, float fase)
+    {
+        var px = new Color32[FW * FH];
+        Color32 c = color;
+        Color32 borde = Color32.Lerp(c, new Color32(255, 255, 255, 255), 0.18f);
+        for (int x = 0; x < FW; x++)
+        {
+            float ang = x / (float)FW * Mathf.PI * 2f;
+            int alto = Mathf.RoundToInt(baseAlto + Mathf.Sin(ang * f1 + fase) * a1 + Mathf.Sin(ang * f2 * 2f + fase * 2f) * a2);
+            alto = Mathf.Clamp(alto, 1, FH - 1);
+            for (int y = 0; y < alto; y++) px[y * FW + x] = (y == alto - 1) ? borde : c;
+        }
+        return px;
+    }
+
+    static void Poner(Color32[] px, int x, int y, Color32 c)
+    {
+        if (y < 0 || y >= FH) return;
+        x = ((x % FW) + FW) % FW;                        // da la vuelta para que el scroll sea continuo
+        px[y * FW + x] = c;
+    }
+
+    static void Banda(Color32[] px, int x0, int y0, int bw, int bh, byte alfa)
     {
         for (int y = y0; y < y0 + bh; y++)
             for (int x = x0; x < x0 + bw; x++)
-                Aclarar(px, w, h, x, y, cant);
+            {
+                if (y < 0 || y >= FH) continue;
+                int xx = ((x % FW) + FW) % FW;
+                if (px[y * FW + xx].a < alfa) px[y * FW + xx] = new Color32(255, 255, 255, alfa);
+            }
     }
 
-    static void Aclarar(Color32[] px, int w, int h, int x, int y, float cant)
+    void AnimarFondo()
     {
-        if (y < 0 || y >= h) return;
-        x = ((x % w) + w) % w;                           // da la vuelta para que el scroll sea continuo
-        px[y * w + x] = Color32.Lerp(px[y * w + x], new Color32(255, 255, 255, 255), cant);
+        if (capas.Count == 0) return;
+        float dt = Time.unscaledDeltaTime;
+        float t = Time.unscaledTime;
+
+        // Scroll con parallax
+        foreach (var c in capas)
+        {
+            c.pos = (c.pos + c.vel * dt) % 1f;
+            c.raw.uvRect = new Rect(c.pos, 0f, 1f, 1f);
+        }
+
+        // Cielo que cambia lento entre noche y atardecer
+        atardecerRaw.color = new Color(1f, 1f, 1f, (0.5f + 0.5f * Mathf.Sin(t * 0.12f)) * 0.7f);
+
+        // Estrellas titilando
+        estrellasA.color = new Color(1f, 1f, 1f, 0.35f + 0.65f * (0.5f + 0.5f * Mathf.Sin(t * 1.7f)));
+        estrellasB.color = new Color(1f, 1f, 1f, 0.35f + 0.65f * (0.5f + 0.5f * Mathf.Sin(t * 1.3f + 2.2f)));
+
+        // Luna flotando
+        if (lunaRT != null)
+        {
+            lunaRT.anchoredPosition = new Vector2(Mathf.Sin(t * 0.3f) * 10f, Mathf.Sin(t * 0.6f) * 8f);
+            lunaRT.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(t * 0.4f) * 4f);
+        }
+
+        // Luciernagas
+        for (int i = 0; i < NumLuces; i++)
+        {
+            lucesPos[i].y += lucesVel[i] * dt;
+            if (lucesPos[i].y > 1.05f)
+            {
+                lucesPos[i].y = -0.05f;
+                lucesPos[i].x = Random.value;
+            }
+            float x = lucesPos[i].x + Mathf.Sin(t * 0.8f + lucesFase[i]) * lucesAmp[i];
+            lucesRT[i].anchorMin = lucesRT[i].anchorMax = new Vector2(x, lucesPos[i].y);
+            lucesRT[i].anchoredPosition = Vector2.zero;
+            var col = lucesIm[i].color;
+            col.a = 0.2f + 0.6f * (0.5f + 0.5f * Mathf.Sin(t * 2f + lucesFase[i]));
+            lucesIm[i].color = col;
+        }
+
+        // Estrella fugaz de vez en cuando
+        if (fugazT < 0f)
+        {
+            fugazEspera -= dt;
+            if (fugazEspera <= 0f)
+            {
+                fugazT = 0f;
+                fugazIni = new Vector2(Random.Range(0.35f, 0.95f), Random.Range(0.7f, 0.95f));
+            }
+        }
+        else
+        {
+            fugazT += dt / 0.7f;
+            if (fugazT >= 1f)
+            {
+                fugazT = -1f;
+                fugazEspera = Random.Range(4f, 9f);
+                fugazIm.color = new Color(1f, 1f, 1f, 0f);
+            }
+            else
+            {
+                Vector2 p = fugazIni + new Vector2(-0.28f, -0.2f) * fugazT;
+                fugazRT.anchorMin = fugazRT.anchorMax = p;
+                fugazRT.anchoredPosition = Vector2.zero;
+                fugazIm.color = new Color(1f, 1f, 1f, Mathf.Sin(fugazT * Mathf.PI));
+            }
+        }
+    }
+
+    void AnimarTitulo()
+    {
+        if (tituloRT == null) return;
+        float t = Time.unscaledTime;
+        tituloRT.anchoredPosition = new Vector2(0f, -8f + Mathf.Sin(t * 2f) * 3f);
+        tituloRT.localScale = Vector3.one * (1f + 0.015f * Mathf.Sin(t * 3f));
+    }
+
+    // ───────────────────────── CORAZONES Y TIEMPO ─────────────────────────
+
+    // Corazon pixel-art generado por codigo (lleno = rojo, vacio = gris oscuro)
+    Sprite CrearCorazon(bool lleno)
+    {
+        string[] forma =
+        {
+            ".XX...XX.",
+            "XXXX.XXXX",
+            "XXXXXXXXX",
+            "XXXXXXXXX",
+            ".XXXXXXX.",
+            "..XXXXX..",
+            "...XXX...",
+            "....X...."
+        };
+        const int w = 11, h = 10;
+        var f = new bool[w, h];
+        for (int fila = 0; fila < 8; fila++)
+            for (int col = 0; col < 9; col++)
+                if (forma[fila][col] == 'X') f[col + 1, h - 2 - fila] = true;
+
+        Color32 relleno = lleno ? new Color32(232, 55, 72, 255) : new Color32(58, 62, 84, 255);
+        Color32 brillo = new Color32(255, 165, 175, 255);
+        Color32 contorno = new Color32(16, 18, 34, 255);
+
+        var px = new Color32[w * h];
+        for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+            {
+                if (f[x, y])
+                {
+                    px[y * w + x] = relleno;
+                    // brillito arriba a la izquierda
+                    if (lleno && x == 2 && (y == h - 3 || y == h - 4)) px[y * w + x] = brillo;
+                }
+                else
+                {
+                    bool vecino = (x > 0 && f[x - 1, y]) || (x < w - 1 && f[x + 1, y]) ||
+                                  (y > 0 && f[x, y - 1]) || (y < h - 1 && f[x, y + 1]);
+                    px[y * w + x] = vecino ? contorno : new Color32(0, 0, 0, 0);
+                }
+            }
+
+        var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+        tex.filterMode = FilterMode.Point;
+        tex.wrapMode = TextureWrapMode.Clamp;
+        tex.SetPixels32(px);
+        tex.Apply();
+        temporales.Add(tex);
+
+        var sp = Sprite.Create(tex, new Rect(0, 0, w, h), new Vector2(0.5f, 0.5f), 100f);
+        temporales.Add(sp);
+        return sp;
+    }
+
+    void ActualizarTiempoUI()
+    {
+        if (cronometro == null) return;
+        int s = Mathf.CeilToInt(Mathf.Max(0f, tiempo));
+        cronometro.text = "TIEMPO  " + (s / 60).ToString("00") + ":" + (s % 60).ToString("00");
+
+        barraRelleno.color = tiempo <= tiempoCorazon2 ? new Color32(235, 70, 70, 255)
+                           : tiempo <= tiempoCorazon1 ? new Color32(250, 200, 60, 255)
+                           : new Color32(80, 220, 140, 255);
+        barraRect.anchorMax = new Vector2(Mathf.Clamp01(tiempo / tiempoTotal), 1f);
+
+        // latido del reloj en los ultimos segundos
+        if (jugando && tiempo <= tiempoCorazon2)
+        {
+            float fr = tiempo - Mathf.Floor(tiempo);
+            cronoRT.localScale = Vector3.one * (1f + 0.12f * fr);
+        }
+        else cronoRT.localScale = Vector3.one;
+    }
+
+    void QuitarCorazon()
+    {
+        if (vidas <= 0) return;
+        vidas--;
+        if (vidas < corazones.Count)
+        {
+            corazones[vidas].rectTransform.localScale = Vector3.one;
+            StartCoroutine(AnimCorazon(corazones[vidas]));
+        }
+        StartCoroutine(FlashRojo());
+    }
+
+    IEnumerator AnimCorazon(Image im)
+    {
+        var rt = im.rectTransform;
+        for (float t = 0f; t < 1f; t += Time.unscaledDeltaTime / 0.45f)
+        {
+            rt.localScale = Vector3.one * (1f + 0.6f * Mathf.Sin(t * Mathf.PI));
+            rt.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(t * Mathf.PI * 6f) * 14f * (1f - t));
+            if (t > 0.4f) im.sprite = corazonVacio;
+            yield return null;
+        }
+        im.sprite = corazonVacio;
+        rt.localScale = Vector3.one;
+        rt.localRotation = Quaternion.identity;
+    }
+
+    IEnumerator FlashRojo()
+    {
+        for (float t = 0f; t < 1f; t += Time.unscaledDeltaTime / 0.4f)
+        {
+            flash.color = new Color(1f, 0.1f, 0.1f, 0.35f * (1f - t));
+            yield return null;
+        }
+        flash.color = new Color(1f, 0.1f, 0.1f, 0f);
+    }
+
+    // ───────────────────────── DERROTA ─────────────────────────
+
+    void Perder()
+    {
+        if (!jugando) return;
+        jugando = false;
+        cronoRT.localScale = Vector3.one;
+        if (alPerder != null) alPerder.Invoke();
+        StartCoroutine(MostrarDerrota());
+    }
+
+    IEnumerator MostrarDerrota()
+    {
+        yield return new WaitForSecondsRealtime(0.7f);
+
+        var ov = NuevoUI("Derrota", canvasRT);
+        Estirar(ov, 0);
+        var velo = Img(ov, new Color(0.02f, 0.03f, 0.08f, 0.78f));
+        velo.raycastTarget = true;                       // bloquea las piezas de abajo
+        var cg = ov.gameObject.AddComponent<CanvasGroup>();
+        cg.alpha = 0f;
+
+        var cuadro = NuevoUI("Cuadro", ov);
+        Centrar(cuadro, Vector2.zero, new Vector2(900f, 540f));
+        Img(cuadro, colorMarco);
+        var b = NuevoUI("Borde", cuadro);
+        Estirar(b, 8);
+        Img(b, new Color32(18, 24, 44, 255));
+        var p = NuevoUI("Panel", b);
+        Estirar(p, 6);
+        Img(p, new Color32(26, 38, 66, 245));
+
+        // Corazon roto (vacio) grande
+        var hRT = NuevoUI("CorazonGrande", p);
+        Centrar(hRT, new Vector2(0f, 165f), new Vector2(110f, 100f));
+        var hIm = hRT.gameObject.AddComponent<Image>();
+        hIm.sprite = corazonVacio;
+        hIm.raycastTarget = false;
+
+        var tit = CrearTexto("Titulo", p, 64, new Color32(255, 120, 120, 255), TextAlignmentOptions.Center);
+        Centrar(tit.rectTransform, new Vector2(0f, 60f), new Vector2(820f, 90f));
+        tit.characterSpacing = 4f;
+        tit.text = "SE ACABÓ EL TIEMPO";
+
+        var sub = CrearTexto("Sub", p, 36, new Color32(235, 240, 228, 255), TextAlignmentOptions.Center);
+        Centrar(sub.rectTransform, new Vector2(0f, -22f), new Vector2(820f, 60f));
+        sub.fontStyle = FontStyles.Normal;
+        sub.text = "Colocaste " + colocadas + " de " + piezas.Count + " piezas";
+
+        CrearBoton("REINTENTAR", p, new Vector2(-200f, -150f), new Vector2(350f, 96f), new Color32(38, 142, 108, 255), Reintentar);
+        CrearBoton("SALIR", p, new Vector2(200f, -150f), new Vector2(350f, 96f), new Color32(190, 70, 80, 255), Salir);
+
+        for (float t = 0f; t < 1f; t += Time.unscaledDeltaTime / 0.35f)
+        {
+            cg.alpha = t;
+            cuadro.localScale = Vector3.one * (0.85f + 0.15f * Mathf.SmoothStep(0f, 1f, t));
+            yield return null;
+        }
+        cg.alpha = 1f;
+        cuadro.localScale = Vector3.one;
+    }
+
+    void CrearBoton(string texto, Transform padre, Vector2 pos, Vector2 tam, Color32 color, UnityAction accion)
+    {
+        var rt = NuevoUI("Boton" + texto, padre);
+        Centrar(rt, pos, tam);
+        var borde = rt.gameObject.AddComponent<Image>();
+        borde.color = new Color32(18, 24, 44, 255);
+
+        var inner = NuevoUI("Fondo", rt);
+        Estirar(inner, 5);
+        var im = inner.gameObject.AddComponent<Image>();
+        im.color = color;
+
+        // brillo en la mitad de arriba del boton
+        var luz = NuevoUI("Brillo", inner);
+        luz.anchorMin = new Vector2(0f, 0.55f);
+        luz.anchorMax = new Vector2(1f, 1f);
+        luz.offsetMin = luz.offsetMax = Vector2.zero;
+        Img(luz, new Color(1f, 1f, 1f, 0.14f));
+
+        var btn = rt.gameObject.AddComponent<Button>();
+        btn.targetGraphic = borde;
+        btn.onClick.AddListener(accion);
+
+        var t = CrearTexto("Texto", inner, 42, Color.white, TextAlignmentOptions.Center);
+        Estirar(t.rectTransform, 0);
+        t.characterSpacing = 3f;
+        t.text = texto;
+    }
+
+    void Reintentar()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    void Salir()
+    {
+        if (!string.IsNullOrEmpty(escenaDeRegreso)) SceneManager.LoadScene(escenaDeRegreso);
+        else Debug.LogWarning("RompecabezasManager: falta 'Escena De Regreso' (el nombre de tu escena principal).");
     }
 
     // ───────────────────────── PIEZAS ─────────────────────────
@@ -237,24 +814,24 @@ public class RompecabezasManager : MonoBehaviour
         float rad = Mathf.Min(cw, ch) * tamPestana;
         int pad = Mathf.CeilToInt(rad * 2.15f) + grosorBorde + 2;
 
-        // Tamano y posicion del tablero dentro del recuadro
+        // Tamano y posicion del tablero dentro de la zona de juego
         Vector2 mesaTam = mesa.rect.size;
-        float escala = (mesaTam.y * alturaTablero) / (filas * ch);
-        escala = Mathf.Min(escala, (mesaTam.x * 0.78f) / (columnas * cw));
+        float escala = (mesaTam.y * tamanoTablero) / (filas * ch);
+        escala = Mathf.Min(escala, (mesaTam.x * anchoTablero) / (columnas * cw));
         Vector2 tabTam = new Vector2(columnas * cw, filas * ch) * escala;
-        Vector2 centro = new Vector2(0f, -mesaTam.y * 0.03f);
+        Vector2 centro = Vector2.zero;
         Vector2 origen = centro - tabTam * 0.5f;
         var tabRect = new Rect(origen, tabTam);
         var uv = new Rect(0f, 0f, (float)(columnas * cw) / imgW, (float)(filas * ch) / imgH);
 
         // Borde claro + fondo oscuro + guia tenue de la imagen
         var tb = NuevoUI("TableroBorde", mesa);
-        Centrar(tb, centro, tabTam + new Vector2(14f, 14f));
-        Img(tb, new Color(1f, 1f, 1f, 0.25f));
+        Centrar(tb, centro, tabTam + new Vector2(16f, 16f));
+        Img(tb, new Color(1f, 1f, 1f, 0.3f));
 
         var tf = NuevoUI("TableroFondo", mesa);
         Centrar(tf, centro, tabTam);
-        Img(tf, new Color(0f, 0f, 0f, 0.35f));
+        Img(tf, new Color(0f, 0f, 0f, 0.4f));
 
         var guia = NuevoUI("Guia", mesa);
         Centrar(guia, centro, tabTam);
@@ -337,17 +914,18 @@ public class RompecabezasManager : MonoBehaviour
         ActualizarContador();
     }
 
-    // Reparte las piezas por el recuadro, de preferencia fuera del tablero
+    // Reparte las piezas por la zona de juego, de preferencia fuera del tablero (a los lados)
     Vector2 PosicionInicial(Vector2 tamPieza, Vector2 mesaTam, Rect tablero, Vector2 destino)
     {
         Vector2 lim = mesaTam * 0.5f - tamPieza * 0.45f;
+        var zonaTablero = new Rect(tablero.position - tamPieza * 0.3f, tablero.size + tamPieza * 0.6f);
         Vector2 p = Vector2.zero;
-        for (int i = 0; i < 40; i++)
+        for (int i = 0; i < 60; i++)
         {
             p = new Vector2(Random.Range(-lim.x, lim.x), Random.Range(-lim.y, lim.y));
-            bool fuera = !tablero.Contains(p);
+            bool fuera = !zonaTablero.Contains(p);
             bool lejos = Vector2.Distance(p, destino) > distanciaIman * 2f;
-            if (lejos && (fuera || i > 25)) break;
+            if (lejos && (fuera || i > 40)) break;
         }
         return p;
     }
@@ -454,18 +1032,18 @@ public class RompecabezasManager : MonoBehaviour
         p.Fijar();
         colocadas++;
         ActualizarContador();
-        if (colocadas >= piezas.Count) StartCoroutine(Final());
+        if (colocadas >= piezas.Count)
+        {
+            jugando = false;               // se detiene el reloj
+            cronoRT.localScale = Vector3.one;
+            StartCoroutine(Final());
+        }
     }
 
     void ActualizarContador()
     {
-        string texto = "PIEZAS  " + colocadas + " / " + piezas.Count;
-        if (tiempoLimite > 0f)
-        {
-            int seg = Mathf.CeilToInt(tiempoRestante);
-            texto += "     TIEMPO  " + (seg / 60) + ":" + (seg % 60).ToString("00");
-        }
-        contador.text = texto;
+        if (contador == null) return;
+        contador.text = "PIEZAS  " + colocadas + " / " + piezas.Count;
     }
 
     IEnumerator Final()
@@ -493,14 +1071,6 @@ public class RompecabezasManager : MonoBehaviour
         MostrarMenu(true, "PIEZAS: " + colocadas + " / " + piezas.Count);
     }
 
-    void Perder()
-    {
-        if (!jugando) return;
-        jugando = false;
-        contador.text = "SE ACABÓ EL TIEMPO";
-        MostrarMenu(false, "SE ACABÓ EL TIEMPO");
-    }
-
     // Menú final (igual al de los otros minijuegos): REINTENTAR / SALIR
     void MostrarMenu(bool gano, string subtitulo)
     {
@@ -508,18 +1078,22 @@ public class RompecabezasManager : MonoBehaviour
         menu.Mostrar(gano, subtitulo, gano ? Medallas.SpriteDe(Medallas.Rompecabezas) : null);
     }
 
-    void Reintentar()
-    {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-    }
-
-    void Salir()
-    {
-        if (!string.IsNullOrEmpty(escenaDeRegreso)) SceneManager.LoadScene(escenaDeRegreso);
-        else Debug.LogWarning("RompecabezasManager: falta 'Escena De Regreso' (el nombre de tu escena principal).");
-    }
-
     // ───────────────────────── AYUDAS DE UI ─────────────────────────
+
+    TextMeshProUGUI CrearTexto(string nombre, Transform padre, float tam, Color color, TextAlignmentOptions alineacion)
+    {
+        var rt = NuevoUI(nombre, padre);
+        var t = rt.gameObject.AddComponent<TextMeshProUGUI>();
+        if (fuente != null) t.font = fuente;
+        t.fontSize = tam;
+        t.fontStyle = FontStyles.Bold;
+        t.alignment = alineacion;
+        t.color = color;
+        t.raycastTarget = false;
+        t.outlineWidth = 0.2f;                           // contorno oscuro para que se lea sobre cualquier fondo
+        t.outlineColor = new Color32(10, 14, 30, 255);
+        return t;
+    }
 
     static RectTransform NuevoUI(string nombre, Transform padre)
     {
@@ -581,7 +1155,7 @@ public class PiezaRompecabezas : MonoBehaviour, IPointerDownHandler, IDragHandle
 
     public void OnDrag(PointerEventData e)
     {
-        if (colocada || !arrastrando) return;
+        if (colocada || !arrastrando || !manager.Jugando) return;
         Vector2 p = PuntoLocal(e) + desfase;
         Vector2 lim = zona.rect.size * 0.5f - rt.sizeDelta * 0.3f;
         p.x = Mathf.Clamp(p.x, -lim.x, lim.x);
