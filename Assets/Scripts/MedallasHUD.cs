@@ -1,28 +1,37 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
 
 // Marcador de medallas para el juego principal (donde Leo camina el recorrido virtual).
-// Solo muestra "MEDALLAS: 1/4" arriba a la izquierda. Cuando regresas de ganar un minijuego,
-// la medalla aparece a mitad de pantalla, espera un momento y vuela hacia el contador
-// (como los soles de Plantas vs Zombies); al llegar, el contador sube.
+// Muestra "MEDALLAS: 1/4" arriba a la izquierda. Al ganar un minijuego, la medalla aparece
+// a mitad de pantalla, suena un sonidito al salir del centro y vuela hacia el contador.
+// Al llegar a 4/4, espera 5 s sin diálogo y lanza el storyboard final.
 public class MedallasHUD : MonoBehaviour
 {
     [Header("Opcional: la fuente pixel art de tus otros minijuegos")]
     public TMP_FontAsset fuente;
 
     [Header("Animación de la medalla ganada")]
-    public Vector2 tamanoMedalla = new Vector2(170f, 340f); // en el centro de la pantalla
+    public Vector2 tamanoMedalla = new Vector2(170f, 340f);
     public float duracionAparece = 0.45f;
     public float duracionEspera = 0.9f;
     public float duracionVuelo = 0.8f;
+
+    [Header("Sonido")]
+    public AudioClip sonidoMedalla; // opcional; si está vacío usa Resources/Medallas/Medalla_Sonido
+    [Range(0f, 1f)] public float volumenSonido = 0.8f;
+
+    [Header("Final de la historia")]
+    public float esperaFinal = 5f; // segundos SIN diálogo antes de lanzar el storyboard
 
     static readonly Color Dorado = new Color(1f, 0.85f, 0.2f);
 
     TMP_Text textoContador;
     RectTransform canvasRT, medallaRT;
     Image medallaImg;
+    AudioSource audioSource;
     int mostrado;
     float escalaContador = 1f;
 
@@ -32,7 +41,6 @@ public class MedallasHUD : MonoBehaviour
     Vector2 inicioVuelo, destino;
 
     // Se crea solo en cualquier escena que tenga a Leo (no hace falta agregarlo a mano).
-    // Si ya pusiste el script en un GameObject (por ejemplo para asignar la fuente), se usa ese.
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void Arrancar()
     {
@@ -49,12 +57,23 @@ public class MedallasHUD : MonoBehaviour
 
     void Start()
     {
-        Debug.Log("[MedallasHUD v3 - texto + medalla voladora] activo en la escena " + SceneManager.GetActiveScene().name +
+        Debug.Log("[MedallasHUD v5 - con sonido] escena " + SceneManager.GetActiveScene().name +
                   " | medallas: " + Medallas.Cantidad + "/" + Medallas.Total);
         Construir();
 
-        // ¿Se acaba de ganar una medalla? Entonces el contador muestra la cantidad anterior
-        // hasta que la medalla llegue volando.
+        // Sonido de la medalla (2D)
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 0f;
+        if (sonidoMedalla == null)
+            sonidoMedalla = Resources.Load<AudioClip>("Medallas/Medalla_Sonido");
+        if (sonidoMedalla == null)
+            Debug.LogWarning("[MedallasHUD] No encuentro Assets/Resources/Medallas/Medalla_Sonido (wav/mp3/ogg).");
+
+        // PRUEBA: descomenta la siguiente línea para simular que ganaste las 4 medallas.
+        // Vuelve a comentarla cuando termines de probar.
+        // foreach (string id in Medallas.Todas) Medallas.Ganar(id);
+
         string nueva = Medallas.nueva;
         Medallas.nueva = null;
         Sprite sp = string.IsNullOrEmpty(nueva) ? null : Medallas.SpriteDe(nueva);
@@ -73,6 +92,7 @@ public class MedallasHUD : MonoBehaviour
             mostrado = Medallas.Cantidad;
         }
         ActualizarTexto();
+        RevisarFinal();
     }
 
     void Update()
@@ -98,8 +118,8 @@ public class MedallasHUD : MonoBehaviour
                     if (t >= duracionEspera)
                     {
                         inicioVuelo = medallaRT.anchoredPosition;
-                        // El contador está arriba a la izquierda; calculamos su posición respecto al centro
                         destino = new Vector2(-canvasRT.rect.width / 2f + 150f, canvasRT.rect.height / 2f - 64f);
+                        Sonar(); // suena al salir del centro rumbo al contador
                         fase = Fase.Vuela;
                         t = 0f;
                     }
@@ -109,7 +129,7 @@ public class MedallasHUD : MonoBehaviour
                 {
                     t += Time.deltaTime;
                     float k = Mathf.Clamp01(t / duracionVuelo);
-                    float e = k * k; // arranca lento y se acelera, como si el marcador la jalara
+                    float e = k * k; // arranca lento y se acelera
                     Vector2 pos = Vector2.Lerp(inicioVuelo, destino, e);
                     pos.x -= Mathf.Sin(k * Mathf.PI) * 120f; // pequeña curva en el camino
                     medallaRT.anchoredPosition = pos;
@@ -121,11 +141,49 @@ public class MedallasHUD : MonoBehaviour
                         ActualizarTexto();
                         escalaContador = 1.6f; // rebote del contador al recibir la medalla
                         fase = Fase.Nada;
+                        RevisarFinal();
                     }
                     break;
                 }
         }
     }
+
+    void Sonar()
+    {
+        if (sonidoMedalla != null && audioSource != null)
+            audioSource.PlayOneShot(sonidoMedalla, volumenSonido);
+    }
+
+    // ---------------- Final de la historia ----------------
+
+    void RevisarFinal()
+    {
+        if (fase != Fase.Nada) return; // todavía hay una medalla volando
+        if (Medallas.Cantidad < Medallas.Total || Medallas.finalMostrado) return;
+
+        Medallas.finalMostrado = true;
+        StartCoroutine(SecuenciaFinal());
+    }
+
+    IEnumerator SecuenciaFinal()
+    {
+        // un respiro para que alcance a abrirse el diálogo de victoria
+        yield return new WaitForSeconds(1f);
+
+        // cuenta 5 s seguidos SIN diálogo; si se abre uno, reinicia la cuenta
+        float libre = 0f;
+        while (libre < esperaFinal)
+        {
+            bool hablando = DialogueManager.Instance != null && DialogueManager.Instance.IsActive;
+            if (hablando) libre = 0f;
+            else libre += Time.deltaTime;
+            yield return null;
+        }
+
+        StoryboardFinal.Mostrar(fuente);
+    }
+
+    // ---------------- Animación ----------------
 
     static float EaseOutBack(float k)
     {
