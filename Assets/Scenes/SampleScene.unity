@@ -67961,7 +67961,7 @@ MonoBehaviour:
   sceneToLoad: Minijuego_Rompecabezas
   victoryLines:
   - Felicidades has terminado el rompecabezas
-  - Has conseguido la medalla de (sepa)
+  - Has conseguido la medalla de mi materia
   - Ahora puedes continuar tu camino
 --- !u!58 &1883806849
 CircleCollider2D:

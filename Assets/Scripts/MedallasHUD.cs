@@ -6,8 +6,8 @@ using TMPro;
 
 // Marcador de medallas para el juego principal (donde Leo camina el recorrido virtual).
 // Muestra "MEDALLAS: 1/4" arriba a la izquierda. Al ganar un minijuego, la medalla aparece
-// a mitad de pantalla y vuela hacia el contador. Al llegar a 4/4, espera 5 s sin diálogo
-// y lanza el storyboard final.
+// a mitad de pantalla, suena un sonidito al salir del centro y vuela hacia el contador.
+// Al llegar a 4/4, espera 5 s sin diálogo y lanza el storyboard final.
 public class MedallasHUD : MonoBehaviour
 {
     [Header("Opcional: la fuente pixel art de tus otros minijuegos")]
@@ -19,6 +19,10 @@ public class MedallasHUD : MonoBehaviour
     public float duracionEspera = 0.9f;
     public float duracionVuelo = 0.8f;
 
+    [Header("Sonido")]
+    public AudioClip sonidoMedalla; // opcional; si está vacío usa Resources/Medallas/Medalla_Sonido
+    [Range(0f, 1f)] public float volumenSonido = 0.8f;
+
     [Header("Final de la historia")]
     public float esperaFinal = 5f; // segundos SIN diálogo antes de lanzar el storyboard
 
@@ -27,6 +31,7 @@ public class MedallasHUD : MonoBehaviour
     TMP_Text textoContador;
     RectTransform canvasRT, medallaRT;
     Image medallaImg;
+    AudioSource audioSource;
     int mostrado;
     float escalaContador = 1f;
 
@@ -52,9 +57,18 @@ public class MedallasHUD : MonoBehaviour
 
     void Start()
     {
-        Debug.Log("[MedallasHUD v4 - con final] escena " + SceneManager.GetActiveScene().name +
+        Debug.Log("[MedallasHUD v5 - con sonido] escena " + SceneManager.GetActiveScene().name +
                   " | medallas: " + Medallas.Cantidad + "/" + Medallas.Total);
         Construir();
+
+        // Sonido de la medalla (2D)
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 0f;
+        if (sonidoMedalla == null)
+            sonidoMedalla = Resources.Load<AudioClip>("Medallas/Medalla_Sonido");
+        if (sonidoMedalla == null)
+            Debug.LogWarning("[MedallasHUD] No encuentro Assets/Resources/Medallas/Medalla_Sonido (wav/mp3/ogg).");
 
         // PRUEBA: descomenta la siguiente línea para simular que ganaste las 4 medallas.
         // Vuelve a comentarla cuando termines de probar.
@@ -99,11 +113,13 @@ public class MedallasHUD : MonoBehaviour
             case Fase.Espera:
                 {
                     t += Time.deltaTime;
+                    // se mece suavemente mientras espera
                     medallaRT.anchoredPosition = new Vector2(0f, Mathf.Sin(t * 6f) * 8f);
                     if (t >= duracionEspera)
                     {
                         inicioVuelo = medallaRT.anchoredPosition;
                         destino = new Vector2(-canvasRT.rect.width / 2f + 150f, canvasRT.rect.height / 2f - 64f);
+                        Sonar(); // suena al salir del centro rumbo al contador
                         fase = Fase.Vuela;
                         t = 0f;
                     }
@@ -113,9 +129,9 @@ public class MedallasHUD : MonoBehaviour
                 {
                     t += Time.deltaTime;
                     float k = Mathf.Clamp01(t / duracionVuelo);
-                    float e = k * k;
+                    float e = k * k; // arranca lento y se acelera
                     Vector2 pos = Vector2.Lerp(inicioVuelo, destino, e);
-                    pos.x -= Mathf.Sin(k * Mathf.PI) * 120f;
+                    pos.x -= Mathf.Sin(k * Mathf.PI) * 120f; // pequeña curva en el camino
                     medallaRT.anchoredPosition = pos;
                     medallaRT.localScale = Vector3.one * Mathf.Lerp(1f, 0.25f, e);
                     if (k >= 1f)
@@ -123,13 +139,19 @@ public class MedallasHUD : MonoBehaviour
                         medallaRT.gameObject.SetActive(false);
                         mostrado = Medallas.Cantidad;
                         ActualizarTexto();
-                        escalaContador = 1.6f;
+                        escalaContador = 1.6f; // rebote del contador al recibir la medalla
                         fase = Fase.Nada;
                         RevisarFinal();
                     }
                     break;
                 }
         }
+    }
+
+    void Sonar()
+    {
+        if (sonidoMedalla != null && audioSource != null)
+            audioSource.PlayOneShot(sonidoMedalla, volumenSonido);
     }
 
     // ---------------- Final de la historia ----------------
@@ -191,6 +213,7 @@ public class MedallasHUD : MonoBehaviour
         cs.matchWidthOrHeight = 0.5f;
         canvasRT = cgo.GetComponent<RectTransform>();
 
+        // Texto "MEDALLAS: x/4", sin panel de fondo (con contorno negro para que se lea)
         GameObject tgo = new GameObject("Contador", typeof(RectTransform));
         tgo.transform.SetParent(cgo.transform, false);
         TextMeshProUGUI txt = tgo.AddComponent<TextMeshProUGUI>();
@@ -208,6 +231,7 @@ public class MedallasHUD : MonoBehaviour
         trt.sizeDelta = new Vector2(800f, 90f);
         textoContador = txt;
 
+        // Medalla que vuela (la medalla mide 16x32, o sea 1:2)
         GameObject mgo = new GameObject("MedallaGanada", typeof(RectTransform), typeof(Image));
         mgo.transform.SetParent(cgo.transform, false);
         medallaImg = mgo.GetComponent<Image>();
