@@ -36,6 +36,10 @@ public class EthernetMinigame : MonoBehaviour
     [Tooltip("Se dispara al cerrar el minijuego, sin importar si se completó o no.")]
     public UnityEvent onClosed;
 
+    [Header("Menú final (ganar / perder)")]
+    [Tooltip("Cuántos cables equivocados se permiten en total antes de perder. 0 = sin límite (entonces nunca se pierde).")]
+    public int maxFallos = 5;
+
     // ------------------------------------------------------------------
     // Paleta (8 colores distintos para llegar hasta 8 cables)
     // ------------------------------------------------------------------
@@ -88,6 +92,9 @@ public class EthernetMinigame : MonoBehaviour
     int phase, connectedCount, cablesThisPhase;
     EthernetPort dragging;
     Coroutine statusRoutine;
+    int fallos;
+    bool ganado;
+    MenuFinal menu;
 
     public bool IsPlaying { get { return playing; } }
 
@@ -112,6 +119,8 @@ public class EthernetMinigame : MonoBehaviour
         playing = true;
         busy = false;
         phase = 0;
+        fallos = 0;
+        ganado = false;
         root.SetActive(true);
         FitStage();
         BuildPhase();
@@ -125,6 +134,7 @@ public class EthernetMinigame : MonoBehaviour
         playing = false;
         dragging = null;
         if (root != null) root.SetActive(false);
+        if (menu != null) menu.Ocultar();
 
         if (timeFrozen)
         {
@@ -422,7 +432,14 @@ public class EthernetMinigame : MonoBehaviour
         if (target.colorId == p.colorId)
             Connect(p, target);
         else
-            ShowTempStatus("¡Ese cable no va en ese puerto!", Bad);
+        {
+            fallos++;
+            UpdateCounter();
+            if (maxFallos > 0 && fallos >= maxFallos)
+                StartCoroutine(Perdio());
+            else
+                ShowTempStatus("¡Ese cable no va en ese puerto!", Bad);
+        }
     }
 
     static EthernetPort FindPortUnder(PointerEventData e)
@@ -475,9 +492,40 @@ public class EthernetMinigame : MonoBehaviour
         else
         {
             SetStatus("¡Red restaurada! Todos los enlaces están activos", Good);
-            yield return new WaitForSecondsRealtime(2f);
-            Close(true);
+            yield return new WaitForSecondsRealtime(1.5f);
+            Medallas.Ganar(Medallas.Cables);
+            MostrarMenu(true, "FASES COMPLETADAS: " + cablesPerPhase.Length + " / " + cablesPerPhase.Length);
         }
+    }
+
+    IEnumerator Perdio()
+    {
+        busy = true;
+        dragging = null;
+        dragOutline.gameObject.SetActive(false);
+        dragFill.gameObject.SetActive(false);
+        if (statusRoutine != null) { StopCoroutine(statusRoutine); statusRoutine = null; }
+        SetStatus("¡Demasiados cables equivocados!", Bad);
+        yield return new WaitForSecondsRealtime(1.2f);
+        MostrarMenu(false, "LLEGASTE A LA FASE " + (phase + 1) + " DE " + cablesPerPhase.Length);
+    }
+
+    // Menú final (igual al de los otros minijuegos): REINTENTAR / SALIR
+    void MostrarMenu(bool gano, string subtitulo)
+    {
+        ganado = gano;
+        if (menu == null) menu = MenuFinal.Crear(font, Reiniciar, () => Close(ganado));
+        menu.Mostrar(gano, subtitulo, gano ? Medallas.SpriteDe(Medallas.Cables) : null);
+    }
+
+    void Reiniciar()
+    {
+        menu.Ocultar();
+        ganado = false;
+        fallos = 0;
+        phase = 0;
+        busy = false;
+        BuildPhase();
     }
 
     // ------------------------------------------------------------------
@@ -513,7 +561,8 @@ public class EthernetMinigame : MonoBehaviour
 
     void UpdateCounter()
     {
-        counterText.text = "Cables conectados: " + connectedCount + "/" + cablesThisPhase;
+        counterText.text = "Cables conectados: " + connectedCount + "/" + cablesThisPhase
+                         + (maxFallos > 0 ? "     Fallos: " + fallos + "/" + maxFallos : "");
     }
 
     void SetStatus(string msg, Color c)

@@ -12,6 +12,7 @@ public class MinijuegoManager : MonoBehaviour
     TMP_FontAsset fuente;
     Sprite iconoEstrella, iconoFallo;
     int estrellas, total;
+    string idMedalla = Medallas.Laberinto;
 
     Transform raiz;
     TMP_Text textoContador;
@@ -69,7 +70,12 @@ public class MinijuegoManager : MonoBehaviour
             Jugando = false;
             EstadoJuego.minijuegoGanado = true;
             EstadoJuego.minijuegoGanadoEscena = SceneManager.GetActiveScene().name;
-            MostrarFin("¡OBJETIVO CUMPLIDO!", "ESTRELLAS: " + estrellas + "/" + total, iconoEstrella, Color.white);
+
+            // Se gana la medalla del laberinto y se muestra en lugar de la estrella
+            Medallas.Ganar(idMedalla);
+            Sprite medalla = Medallas.SpriteDe(idMedalla);
+            MostrarFin("¡OBJETIVO CUMPLIDO!", "ESTRELLAS: " + estrellas + "/" + total,
+                       medalla != null ? medalla : iconoEstrella, Color.white, medalla != null);
         }
         else
         {
@@ -160,8 +166,18 @@ public class MinijuegoManager : MonoBehaviour
             SceneManager.LoadScene(escenaDeRegreso);
     }
 
-    void MostrarFin(string titulo, string subtitulo, Sprite icono, Color colorTitulo)
+    void MostrarFin(string titulo, string subtitulo, Sprite icono, Color colorTitulo, bool esMedalla = false)
     {
+        // La medalla mide 16x32 (1:2), así que se muestra más alta que el icono normal
+        RectTransform irt = finIcono.rectTransform;
+        irt.sizeDelta = esMedalla ? new Vector2(190, 380) : new Vector2(150, 150);
+        irt.anchoredPosition = new Vector2(0, esMedalla ? 250 : 250);
+        float dy = esMedalla ? -120f : 0f; // el texto baja un poco para que quepa la medalla grande
+        finTitulo.rectTransform.anchoredPosition = new Vector2(0, 100 + dy);
+        finSubtitulo.rectTransform.anchoredPosition = new Vector2(0, -30 + dy);
+        for (int n = 0; n < opcionesRT.Length; n++)
+            opcionesRT[n].anchoredPosition = new Vector2(0, -130 - n * 85 + dy);
+
         finTitulo.text = titulo;
         finTitulo.color = colorTitulo;
         finSubtitulo.text = subtitulo;
@@ -226,7 +242,7 @@ public class MinijuegoManager : MonoBehaviour
         raiz = cgo.transform;
 
         // Menú final: velo negro transparente sobre el juego (la barra de arriba queda encima)
-        RectTransform fondo = CrearPanel("MenuFin", raiz, new Color(0f, 0f, 0f, 0.8f));
+        RectTransform fondo = CrearPanel("MenuFin", raiz, new Color(0f, 0f, 0f, 0.88f));
         Estirar(fondo);
         panelFin = fondo.gameObject;
 

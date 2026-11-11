@@ -36,6 +36,10 @@ public class RompecabezasManager : MonoBehaviour
     public string escenaDeRegreso = "SampleScene";               // nombre de tu escena principal
     public UnityEvent alCompletar;
 
+    [Header("Tiempo (para poder perder)")]
+    [Tooltip("Segundos para armar el rompecabezas. 0 = sin límite (entonces nunca se pierde).")]
+    public float tiempoLimite = 180f;
+
     struct Borde
     {
         public int arr, der, aba, izq;                           // 0 plano, 1 pestana hacia afuera, -1 hueco
@@ -50,6 +54,12 @@ public class RompecabezasManager : MonoBehaviour
     readonly List<Object> temporales = new List<Object>();
     int colocadas;
     float scroll;
+    float tiempoRestante;
+    int ultimoSegundo = -1;
+    bool jugando;
+    MenuFinal menu;
+
+    public bool Jugando { get { return jugando; } }
 
     IEnumerator Start()
     {
@@ -65,6 +75,9 @@ public class RompecabezasManager : MonoBehaviour
         yield return null;                 // esperamos un frame para que el Canvas calcule tamanos
         Canvas.ForceUpdateCanvases();
         ConstruirPiezas();
+        tiempoRestante = tiempoLimite;
+        jugando = true;
+        ActualizarContador();
     }
 
     void Update()
@@ -72,6 +85,18 @@ public class RompecabezasManager : MonoBehaviour
         if (fondoRaw == null) return;
         scroll = (scroll + 0.01f * Time.unscaledDeltaTime) % 1f;   // las nubes se mueven muy despacio
         fondoRaw.uvRect = new Rect(scroll, 0f, 1f, 1f);
+
+        // Cuenta regresiva: si llega a 0 antes de terminar, se pierde
+        if (jugando && tiempoLimite > 0f)
+        {
+            tiempoRestante -= Time.unscaledDeltaTime;
+            if (tiempoRestante <= 0f) { tiempoRestante = 0f; Perder(); }
+            else
+            {
+                int seg = Mathf.CeilToInt(tiempoRestante);
+                if (seg != ultimoSegundo) { ultimoSegundo = seg; ActualizarContador(); }
+            }
+        }
     }
 
     void OnDestroy()
@@ -423,6 +448,7 @@ public class RompecabezasManager : MonoBehaviour
 
     public void Soltada(PiezaRompecabezas p)
     {
+        if (!jugando) return;
         if (Vector2.Distance(p.Rect.anchoredPosition, p.Destino) > distanciaIman) return;
 
         p.Fijar();
@@ -433,11 +459,18 @@ public class RompecabezasManager : MonoBehaviour
 
     void ActualizarContador()
     {
-        contador.text = "PIEZAS  " + colocadas + " / " + piezas.Count;
+        string texto = "PIEZAS  " + colocadas + " / " + piezas.Count;
+        if (tiempoLimite > 0f)
+        {
+            int seg = Mathf.CeilToInt(tiempoRestante);
+            texto += "     TIEMPO  " + (seg / 60) + ":" + (seg % 60).ToString("00");
+        }
+        contador.text = texto;
     }
 
     IEnumerator Final()
     {
+        jugando = false;
         contador.text = "COMPLETADO";
         yield return new WaitForSecondsRealtime(0.35f);
         completa.SetAsLastSibling();
@@ -453,7 +486,35 @@ public class RompecabezasManager : MonoBehaviour
         EstadoJuego.minijuegoGanado = true;
         EstadoJuego.minijuegoGanadoEscena = SceneManager.GetActiveScene().name;
 
+        // Medalla negra del rompecabezas (se ve en el marcador del juego principal)
+        Medallas.Ganar(Medallas.Rompecabezas);
+
         if (alCompletar != null) alCompletar.Invoke();
+        MostrarMenu(true, "PIEZAS: " + colocadas + " / " + piezas.Count);
+    }
+
+    void Perder()
+    {
+        if (!jugando) return;
+        jugando = false;
+        contador.text = "SE ACABÓ EL TIEMPO";
+        MostrarMenu(false, "SE ACABÓ EL TIEMPO");
+    }
+
+    // Menú final (igual al de los otros minijuegos): REINTENTAR / SALIR
+    void MostrarMenu(bool gano, string subtitulo)
+    {
+        if (menu == null) menu = MenuFinal.Crear(fuente, Reintentar, Salir);
+        menu.Mostrar(gano, subtitulo, gano ? Medallas.SpriteDe(Medallas.Rompecabezas) : null);
+    }
+
+    void Reintentar()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    void Salir()
+    {
         if (!string.IsNullOrEmpty(escenaDeRegreso)) SceneManager.LoadScene(escenaDeRegreso);
         else Debug.LogWarning("RompecabezasManager: falta 'Escena De Regreso' (el nombre de tu escena principal).");
     }
@@ -511,7 +572,7 @@ public class PiezaRompecabezas : MonoBehaviour, IPointerDownHandler, IDragHandle
 
     public void OnPointerDown(PointerEventData e)
     {
-        if (colocada) return;
+        if (colocada || !manager.Jugando) return;
         arrastrando = true;
         rt.SetAsLastSibling();                           // la pieza agarrada queda encima de todas
         desfase = rt.anchoredPosition - PuntoLocal(e);
