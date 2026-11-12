@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using TMPro;
 
-// Pausa del juego: tecla ESC, tecla ESPACIO o botón "II" arriba a la derecha.
+// Pausa del juego: tecla ESC, tecla ESPACIO o botón de pausa (II) arriba a la derecha.
 // Opciones: CONTINUAR y REINICIAR (con confirmación).
 // Se crea solo en cualquier escena que tenga a Leo.
 public class PausaMenu : MonoBehaviour
@@ -17,8 +17,15 @@ public class PausaMenu : MonoBehaviour
     public TMP_FontAsset fuente; // opcional; si el MedallasHUD tiene una, usa esa
 
     // A dónde va REINICIAR. Vacío = vuelve a cargar la escena actual.
-    // Si quieres que regrese a la intro, pon aquí el nombre: "Intro"
     const string EscenaAlReiniciar = "";
+
+    // ---- BOTÓN DE PAUSA (las dos barras "II", arriba a la derecha) ----
+    const float BotonDistDerecha = 40f;   // distancia al borde derecho
+    const float BotonDistArriba = 64f;    // distancia al borde de arriba (centro de las barras)
+    const float BarraAncho = 11f;
+    const float BarraAlto = 42f;
+    const float BarraSeparacion = 26f;
+
 
     static readonly Color Oro = new Color(0.925f, 0.784f, 0.431f);
     static readonly Color Blanco = new Color(0.94f, 0.94f, 0.97f);
@@ -31,6 +38,7 @@ public class PausaMenu : MonoBehaviour
     GameObject panel, botonPausaGO;
     CanvasGroup panelCG;
     RectTransform botonPausaRT;
+    Image botonBarra1, botonBarra2;
     RectTransform[] botonesRT = new RectTransform[2];
     TextMeshProUGUI[] botonesTxt = new TextMeshProUGUI[2];
     Image[] medallasImg = new Image[4];
@@ -102,9 +110,15 @@ public class PausaMenu : MonoBehaviour
         bool recienDialogo = dialogoPrevio;
         dialogoPrevio = dialogoAhora;
 
-        // El botón "II" solo se ve cuando se puede pausar
+        // El botón de pausa solo se ve cuando se puede pausar
         botonPausaGO.SetActive(!abierto && PuedePausar());
-        if (botonPausaGO.activeSelf) Hover(botonPausaRT, 1f);
+        if (botonPausaGO.activeSelf)
+        {
+            Hover(botonPausaRT, 1f);
+            Color cb = Sobre(botonPausaRT) ? Oro : Blanco;
+            botonBarra1.color = cb;
+            botonBarra2.color = cb;
+        }
 
         bool teclaPausa = k != null &&
             (k.escapeKey.wasPressedThisFrame || k.spaceKey.wasPressedThisFrame);
@@ -305,15 +319,16 @@ public class PausaMenu : MonoBehaviour
         cs.referenceResolution = new Vector2(1920f, 1080f);
         cs.matchWidthOrHeight = 0.5f;
 
-        // --- Botón "II" arriba a la derecha (solo las dos letras) ---
-        TextMeshProUGUI tII = NuevoTexto("BotonPausa", cgo.transform, 52f, new Color(0.85f, 0.85f, 0.9f, 0.85f));
-        botonPausaGO = tII.gameObject;
-        botonPausaRT = tII.rectTransform;
+        // --- Botón de pausa: dos barras gruesas "II" arriba a la derecha ---
+        botonPausaGO = Hijo("BotonPausa", cgo.transform);
+        botonPausaRT = botonPausaGO.GetComponent<RectTransform>();
         botonPausaRT.anchorMin = botonPausaRT.anchorMax = new Vector2(1f, 1f);
         botonPausaRT.pivot = new Vector2(1f, 0.5f);
-        botonPausaRT.anchoredPosition = new Vector2(-40f, -64f);
+        botonPausaRT.anchoredPosition = new Vector2(-BotonDistDerecha, -BotonDistArriba);
         botonPausaRT.sizeDelta = new Vector2(90f, 90f);
-        tII.text = "II";
+
+        botonBarra1 = NuevaBarra(botonPausaGO.transform, -BarraSeparacion / 2f);
+        botonBarra2 = NuevaBarra(botonPausaGO.transform, BarraSeparacion / 2f);
 
         // --- Fondo oscuro (con fundido) ---
         panel = Hijo("Panel", cgo.transform, typeof(Image), typeof(CanvasGroup));
@@ -348,13 +363,13 @@ public class PausaMenu : MonoBehaviour
             mi.sprite = Medallas.SpriteDe(Medallas.Todas[i]);
             mi.preserveAspect = true;
             mi.raycastTarget = false;
-            Centrar(mg.GetComponent<RectTransform>(), new Vector2((i - 1.5f) * 78f, 55f), new Vector2(44f, 88f));
+            Centrar(mg.GetComponent<RectTransform>(), new Vector2((i - 1.5f) * 150f, 20f), new Vector2(99f, 160f));
             medallasImg[i] = mi;
         }
 
         // --- Opciones ---
-        CrearOpcion(0, 58f, -75f);
-        CrearOpcion(1, 54f, -170f);
+        CrearOpcion(0, 58f, -135f);
+        CrearOpcion(1, 54f, -230f);
 
         // --- Ayuda abajo ---
         hint = NuevoTexto("Hint", panel.transform, 28f, new Color(1f, 1f, 1f, 0.45f));
@@ -370,6 +385,23 @@ public class PausaMenu : MonoBehaviour
         t.text = etiquetas[indice];
         botonesRT[indice] = t.rectTransform;
         botonesTxt[indice] = t;
+    }
+
+    // Una barra gruesa con una sombra oscura ligera detrás (para que se distinga sobre el minimapa)
+    Image NuevaBarra(Transform padre, float x)
+    {
+        GameObject sh = Hijo("Sombra", padre, typeof(Image));
+        Centrar(sh.GetComponent<RectTransform>(), new Vector2(x + 4f, -4f), new Vector2(BarraAncho, BarraAlto));
+        Image si = sh.GetComponent<Image>();
+        si.color = new Color(0f, 0f, 0f, 0.55f);
+        si.raycastTarget = false;
+
+        GameObject go = Hijo("Barra", padre, typeof(Image));
+        Centrar(go.GetComponent<RectTransform>(), new Vector2(x, 0f), new Vector2(BarraAncho, BarraAlto));
+        Image img = go.GetComponent<Image>();
+        img.color = Blanco;
+        img.raycastTarget = false;
+        return img;
     }
 
     static Sprite CrearVineta()
