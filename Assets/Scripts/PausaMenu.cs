@@ -1,13 +1,13 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using TMPro;
 
-// Pausa del juego: botón "II" arriba a la derecha o tecla ESC.
-// Por ahora solo pausa y reanuda. Se crea solo en cualquier escena que tenga a Leo.
+// Pausa del juego: tecla ESC, tecla ESPACIO o botón "II" arriba a la derecha.
+// Opciones: CONTINUAR y REINICIAR (con confirmación).
+// Se crea solo en cualquier escena que tenga a Leo.
 public class PausaMenu : MonoBehaviour
 {
     // true mientras el juego está en pausa (y 2 frames después de reanudar,
@@ -16,13 +16,32 @@ public class PausaMenu : MonoBehaviour
 
     public TMP_FontAsset fuente; // opcional; si el MedallasHUD tiene una, usa esa
 
-    static readonly Color Amarillo = new Color(1f, 0.92f, 0.2f);       // igual que el Sí/No
-    static readonly Color FondoSel = new Color(1f, 1f, 1f, 0.18f);
-    const float EscalaSel = 1.12f;
+    // A dónde va REINICIAR. Vacío = vuelve a cargar la escena actual.
+    // Si quieres que regrese a la intro, pon aquí el nombre: "Intro"
+    const string EscenaAlReiniciar = "";
+
+    static readonly Color Oro = new Color(0.925f, 0.784f, 0.431f);
+    static readonly Color Blanco = new Color(0.94f, 0.94f, 0.97f);
+    static readonly Color Apagado = new Color(0.55f, 0.55f, 0.59f);
+    static readonly Color MedallaApagada = new Color(0.22f, 0.22f, 0.27f, 1f);
+    const string HintNormal = "ESC o ESPACIO para continuar";
+    const string HintConfirmar = "Se borran tus medallas    ENTER para confirmar";
+    const float DuracionFade = 0.2f;
 
     GameObject panel, botonPausaGO;
-    RectTransform botonPausaRT, botonContinuarRT;
+    CanvasGroup panelCG;
+    RectTransform botonPausaRT;
+    RectTransform[] botonesRT = new RectTransform[2];
+    TextMeshProUGUI[] botonesTxt = new TextMeshProUGUI[2];
+    Image[] medallasImg = new Image[4];
+    TextMeshProUGUI hint;
+    string[] etiquetas = { "CONTINUAR", "REINICIAR" };
+
     bool abierto;
+    int seleccion;
+    bool confirmando;
+    float fade;
+    bool dialogoPrevio;
     float timeScaleAnterior = 1f;
     bool cursorVisibleAnterior;
     CursorLockMode lockAnterior;
@@ -74,27 +93,104 @@ public class PausaMenu : MonoBehaviour
 
     void Update()
     {
+        Keyboard k = Keyboard.current;
+        Mouse m = Mouse.current;
+
+        // Si hace un instante había un diálogo abierto, esa misma tecla pudo haberlo
+        // cerrado: no la usamos para pausar.
+        bool dialogoAhora = DialogueManager.Instance != null && DialogueManager.Instance.IsActive;
+        bool recienDialogo = dialogoPrevio;
+        dialogoPrevio = dialogoAhora;
+
         // El botón "II" solo se ve cuando se puede pausar
         botonPausaGO.SetActive(!abierto && PuedePausar());
         if (botonPausaGO.activeSelf) Hover(botonPausaRT, 1f);
 
-        Keyboard k = Keyboard.current;
+        bool teclaPausa = k != null &&
+            (k.escapeKey.wasPressedThisFrame || k.spaceKey.wasPressedThisFrame);
 
-        if (k != null && k.escapeKey.wasPressedThisFrame)
+        // ----- Juego corriendo -----
+        if (!abierto)
         {
-            if (abierto) Reanudar();
-            else if (PuedePausar()) Pausar();
+            if (teclaPausa && !recienDialogo && PuedePausar()) { Pausar(); return; }
+            if (botonPausaGO.activeSelf && Clic(botonPausaRT)) Pausar();
             return;
         }
 
-        if (abierto)
-        {
-            Hover(botonContinuarRT, EscalaSel);
+        // ----- Menú de pausa abierto -----
+        fade = Mathf.MoveTowards(fade, 1f, Time.unscaledDeltaTime / DuracionFade);
+        panelCG.alpha = fade;
 
-            // Enter también reanuda (la E se deja libre para no chocar con los diálogos)
-            if (k != null && (k.enterKey.wasPressedThisFrame || k.numpadEnterKey.wasPressedThisFrame))
-                Reanudar();
+        if (teclaPausa) { Reanudar(); return; }
+
+        if (k != null)
+        {
+            if (k.upArrowKey.wasPressedThisFrame || k.wKey.wasPressedThisFrame) Seleccionar(seleccion - 1);
+            if (k.downArrowKey.wasPressedThisFrame || k.sKey.wasPressedThisFrame) Seleccionar(seleccion + 1);
         }
+
+        // El mouse solo cambia la selección cuando se mueve (para no pelear con el teclado)
+        if (m != null && m.delta.ReadValue() != Vector2.zero)
+            for (int i = 0; i < 2; i++)
+                if (Sobre(botonesRT[i])) Seleccionar(i);
+
+        for (int i = 0; i < 2; i++)
+            if (Clic(botonesRT[i])) { Seleccionar(i); Activar(i); return; }
+
+        if (k != null && (k.enterKey.wasPressedThisFrame || k.numpadEnterKey.wasPressedThisFrame))
+        {
+            Activar(seleccion);
+            return;
+        }
+
+        // Estilo: la opción elegida va en dorado y con flechitas; la otra, apagada
+        for (int i = 0; i < 2; i++)
+        {
+            bool sel = (i == seleccion);
+            string txt = sel ? "> " + etiquetas[i] + " <" : etiquetas[i];
+            if (botonesTxt[i].text != txt) botonesTxt[i].text = txt;
+            botonesTxt[i].color = sel ? Oro : Apagado;
+            botonesRT[i].localScale = Vector3.Lerp(botonesRT[i].localScale,
+                Vector3.one * (sel ? 1.05f : 1f), Time.unscaledDeltaTime * 14f);
+        }
+    }
+
+    void Seleccionar(int i)
+    {
+        int nuevo = (i + 2) % 2;
+        if (nuevo == seleccion) return;
+        seleccion = nuevo;
+        CancelarConfirmacion();
+        Click();
+    }
+
+    void Activar(int i)
+    {
+        if (i == 0) { Reanudar(); return; }
+
+        // REINICIAR: la primera vez pide confirmación
+        if (!confirmando)
+        {
+            confirmando = true;
+            etiquetas[1] = "¿SEGURO?";
+            hint.text = HintConfirmar;
+            Click();
+            return;
+        }
+        Reiniciar();
+    }
+
+    void CancelarConfirmacion()
+    {
+        confirmando = false;
+        etiquetas[1] = "REINICIAR";
+        if (hint != null) hint.text = HintNormal;
+    }
+
+    void ActualizarMedallas()
+    {
+        for (int i = 0; i < medallasImg.Length; i++)
+            medallasImg[i].color = Medallas.Tiene(Medallas.Todas[i]) ? Color.white : MedallaApagada;
     }
 
     public void Pausar()
@@ -103,17 +199,21 @@ public class PausaMenu : MonoBehaviour
 
         abierto = true;
         Pausado = true;
+        seleccion = 0;
+        CancelarConfirmacion();
+        ActualizarMedallas();
 
         timeScaleAnterior = Time.timeScale;
         Time.timeScale = 0f;
 
-        // Muestra el mouse para poder darle clic a CONTINUAR
+        // Muestra el mouse para poder darle clic a las opciones
         cursorVisibleAnterior = Cursor.visible;
         lockAnterior = Cursor.lockState;
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
 
-        if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
+        fade = 0f;
+        panelCG.alpha = 0f;
         panel.SetActive(true);
         Click();
     }
@@ -123,14 +223,31 @@ public class PausaMenu : MonoBehaviour
         if (!abierto) return;
 
         abierto = false;
+        CancelarConfirmacion();
         panel.SetActive(false);
         Time.timeScale = timeScaleAnterior;
         Cursor.visible = cursorVisibleAnterior;
         Cursor.lockState = lockAnterior;
 
-        if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
         Click();
         StartCoroutine(SoltarBloqueo());
+    }
+
+    void Reiniciar()
+    {
+        Medallas.Reiniciar();
+
+        // Dejamos todo normal antes de cambiar de escena
+        Time.timeScale = 1f;
+        Cursor.visible = cursorVisibleAnterior;
+        Cursor.lockState = lockAnterior;
+        abierto = false;
+        Pausado = false;
+
+        string destino = string.IsNullOrEmpty(EscenaAlReiniciar)
+            ? SceneManager.GetActiveScene().name
+            : EscenaAlReiniciar;
+        SceneManager.LoadScene(destino);
     }
 
     IEnumerator SoltarBloqueo()
@@ -140,7 +257,7 @@ public class PausaMenu : MonoBehaviour
         Pausado = false;
     }
 
-    // Reusa el sonidito de botón del DialogueManager (no se afecta por el timeScale)
+    // Reusa el sonidito de botón del DialogueManager
     void Click()
     {
         DialogueManager dm = DialogueManager.Instance;
@@ -149,12 +266,23 @@ public class PausaMenu : MonoBehaviour
         AudioSource.PlayClipAtPoint(dm.clickClip, pos, dm.clickVolume);
     }
 
+    // ---------------- Mouse (sin depender del EventSystem) ----------------
+
+    static bool Sobre(RectTransform rt)
+    {
+        return Mouse.current != null &&
+            RectTransformUtility.RectangleContainsScreenPoint(rt, Mouse.current.position.ReadValue(), null);
+    }
+
+    static bool Clic(RectTransform rt)
+    {
+        return Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && Sobre(rt);
+    }
+
     static void Hover(RectTransform rt, float escalaBase)
     {
-        bool encima = Mouse.current != null &&
-            RectTransformUtility.RectangleContainsScreenPoint(rt, Mouse.current.position.ReadValue(), null);
         rt.localScale = Vector3.Lerp(rt.localScale,
-            Vector3.one * escalaBase * (encima ? 1.08f : 1f), Time.unscaledDeltaTime * 14f);
+            Vector3.one * escalaBase * (Sobre(rt) ? 1.08f : 1f), Time.unscaledDeltaTime * 14f);
     }
 
     // ---------------- Interfaz construida por código ----------------
@@ -167,7 +295,7 @@ public class PausaMenu : MonoBehaviour
             if (hud != null) fuente = hud.fuente;
         }
 
-        GameObject cgo = new GameObject("CanvasPausa", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+        GameObject cgo = new GameObject("CanvasPausa", typeof(Canvas), typeof(CanvasScaler));
         cgo.transform.SetParent(transform, false);
         Canvas canvas = cgo.GetComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -177,63 +305,91 @@ public class PausaMenu : MonoBehaviour
         cs.referenceResolution = new Vector2(1920f, 1080f);
         cs.matchWidthOrHeight = 0.5f;
 
-        // --- Botón "II" arriba a la derecha ---
-        botonPausaGO = Hijo("BotonPausa", cgo.transform, typeof(Image), typeof(Button));
-        botonPausaRT = botonPausaGO.GetComponent<RectTransform>();
+        // --- Botón "II" arriba a la derecha (solo las dos letras) ---
+        TextMeshProUGUI tII = NuevoTexto("BotonPausa", cgo.transform, 52f, new Color(0.85f, 0.85f, 0.9f, 0.85f));
+        botonPausaGO = tII.gameObject;
+        botonPausaRT = tII.rectTransform;
         botonPausaRT.anchorMin = botonPausaRT.anchorMax = new Vector2(1f, 1f);
         botonPausaRT.pivot = new Vector2(1f, 0.5f);
         botonPausaRT.anchoredPosition = new Vector2(-40f, -64f);
         botonPausaRT.sizeDelta = new Vector2(90f, 90f);
-        botonPausaGO.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.65f);
-        ConfigurarBoton(botonPausaGO.GetComponent<Button>(), Pausar);
-        TextMeshProUGUI tII = NuevoTexto("Texto", botonPausaGO.transform, 52f, Color.white);
-        Estirar(tII.rectTransform);
         tII.text = "II";
 
-        // --- Panel de pausa (oscuro translúcido) ---
-        panel = Hijo("Panel", cgo.transform, typeof(Image));
+        // --- Fondo oscuro (con fundido) ---
+        panel = Hijo("Panel", cgo.transform, typeof(Image), typeof(CanvasGroup));
         Estirar(panel.GetComponent<RectTransform>());
-        panel.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.7f); // también bloquea clics al juego
+        panel.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.94f);
+        panelCG = panel.GetComponent<CanvasGroup>();
 
-        TextMeshProUGUI titulo = NuevoTexto("Titulo", panel.transform, 120f, Color.white);
-        titulo.rectTransform.anchorMin = titulo.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-        titulo.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-        titulo.rectTransform.anchoredPosition = new Vector2(0f, 150f);
-        titulo.rectTransform.sizeDelta = new Vector2(1200f, 160f);
-        titulo.outlineWidth = 0.25f;
-        titulo.outlineColor = new Color32(0, 0, 0, 255);
+        // Bordes más oscuros (viñeteado)
+        GameObject vin = Hijo("Vineta", panel.transform, typeof(Image));
+        Estirar(vin.GetComponent<RectTransform>());
+        Image vi = vin.GetComponent<Image>();
+        vi.sprite = CrearVineta();
+        vi.raycastTarget = false;
+
+        // --- Título con sombra ---
+        TextMeshProUGUI sombra = NuevoTexto("TituloSombra", panel.transform, 110f, new Color(0.04f, 0.05f, 0.12f, 1f));
+        Centrar(sombra.rectTransform, new Vector2(6f, 184f), new Vector2(1000f, 160f));
+        sombra.text = "PAUSA";
+        TextMeshProUGUI titulo = NuevoTexto("Titulo", panel.transform, 110f, Blanco);
+        Centrar(titulo.rectTransform, new Vector2(0f, 190f), new Vector2(1000f, 160f));
         titulo.text = "PAUSA";
 
-        // --- Botón CONTINUAR (estilo "opción seleccionada": amarillo, fondo clarito, más grande) ---
-        GameObject bgo = Hijo("BotonContinuar", panel.transform, typeof(Image), typeof(Button));
-        botonContinuarRT = bgo.GetComponent<RectTransform>();
-        botonContinuarRT.anchorMin = botonContinuarRT.anchorMax = new Vector2(0.5f, 0.5f);
-        botonContinuarRT.pivot = new Vector2(0.5f, 0.5f);
-        botonContinuarRT.anchoredPosition = new Vector2(0f, -30f);
-        botonContinuarRT.sizeDelta = new Vector2(560f, 110f);
-        botonContinuarRT.localScale = Vector3.one * EscalaSel;
-        bgo.GetComponent<Image>().color = FondoSel;
-        ConfigurarBoton(bgo.GetComponent<Button>(), Reanudar);
-        TextMeshProUGUI tc = NuevoTexto("Texto", bgo.transform, 60f, Amarillo);
-        Estirar(tc.rectTransform);
-        tc.text = "CONTINUAR";
+        GameObject linea = Hijo("Linea", panel.transform, typeof(Image));
+        Centrar(linea.GetComponent<RectTransform>(), new Vector2(0f, 125f), new Vector2(240f, 6f));
+        linea.GetComponent<Image>().color = Oro;
 
-        // --- Ayuda abajo del botón ---
-        TextMeshProUGUI hint = NuevoTexto("Hint", panel.transform, 36f, new Color(1f, 1f, 1f, 0.75f));
-        hint.rectTransform.anchorMin = hint.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-        hint.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-        hint.rectTransform.anchoredPosition = new Vector2(0f, -170f);
-        hint.rectTransform.sizeDelta = new Vector2(1200f, 60f);
-        hint.text = "[ESC] o [ENTER] para continuar";
+        // --- Las 4 medallas (a color las ganadas, apagadas las que faltan) ---
+        for (int i = 0; i < 4; i++)
+        {
+            GameObject mg = Hijo("Medalla" + i, panel.transform, typeof(Image));
+            Image mi = mg.GetComponent<Image>();
+            mi.sprite = Medallas.SpriteDe(Medallas.Todas[i]);
+            mi.preserveAspect = true;
+            mi.raycastTarget = false;
+            Centrar(mg.GetComponent<RectTransform>(), new Vector2((i - 1.5f) * 78f, 55f), new Vector2(44f, 88f));
+            medallasImg[i] = mi;
+        }
+
+        // --- Opciones ---
+        CrearOpcion(0, 58f, -75f);
+        CrearOpcion(1, 54f, -170f);
+
+        // --- Ayuda abajo ---
+        hint = NuevoTexto("Hint", panel.transform, 28f, new Color(1f, 1f, 1f, 0.45f));
+        hint.fontStyle = FontStyles.Normal;
+        Centrar(hint.rectTransform, new Vector2(0f, -480f), new Vector2(1400f, 50f));
+        hint.text = HintNormal;
     }
 
-    static void ConfigurarBoton(Button b, UnityEngine.Events.UnityAction accion)
+    void CrearOpcion(int indice, float size, float y)
     {
-        b.transition = Selectable.Transition.None;
-        Navigation nav = new Navigation();
-        nav.mode = Navigation.Mode.None;
-        b.navigation = nav;
-        b.onClick.AddListener(accion);
+        TextMeshProUGUI t = NuevoTexto("Opcion" + indice, panel.transform, size, Apagado);
+        Centrar(t.rectTransform, new Vector2(0f, y), new Vector2(800f, 100f));
+        t.text = etiquetas[indice];
+        botonesRT[indice] = t.rectTransform;
+        botonesTxt[indice] = t;
+    }
+
+    static Sprite CrearVineta()
+    {
+        int n = 128;
+        Texture2D tex = new Texture2D(n, n, TextureFormat.RGBA32, false);
+        tex.wrapMode = TextureWrapMode.Clamp;
+        Color32[] px = new Color32[n * n];
+        for (int y = 0; y < n; y++)
+            for (int x = 0; x < n; x++)
+            {
+                float dx = (x / (n - 1f) - 0.5f) * 2f;
+                float dy = (y / (n - 1f) - 0.5f) * 2f;
+                float r = Mathf.Sqrt(dx * dx + dy * dy);
+                float a = Mathf.Pow(Mathf.Clamp01((r - 0.55f) / 0.9f), 1.5f) * 0.67f;
+                px[y * n + x] = new Color32(0, 0, 0, (byte)(a * 255f));
+            }
+        tex.SetPixels32(px);
+        tex.Apply();
+        return Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f));
     }
 
     TextMeshProUGUI NuevoTexto(string nombre, Transform padre, float size, Color color)
@@ -262,5 +418,12 @@ public class PausaMenu : MonoBehaviour
         rt.anchorMin = Vector2.zero;
         rt.anchorMax = Vector2.one;
         rt.offsetMin = rt.offsetMax = Vector2.zero;
+    }
+
+    static void Centrar(RectTransform rt, Vector2 pos, Vector2 tam)
+    {
+        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.anchoredPosition = pos;
+        rt.sizeDelta = tam;
     }
 }
