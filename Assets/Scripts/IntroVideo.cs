@@ -64,7 +64,10 @@ public class IntroVideo : MonoBehaviour
     void Update()
     {
         if (listo && EnterPresionado())
+        {
+            Medallas.Reiniciar();
             SceneManager.LoadScene(escenaDelJuego);
+        }
     }
 
     bool EnterPresionado()
