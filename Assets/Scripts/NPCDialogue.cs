@@ -21,13 +21,29 @@ public class NPCDialogue : MonoBehaviour
     [TextArea(2, 5)]
     public string[] victoryLines;
 
+    [Header("Diagnóstico (solo para pruebas)")]
+    [Tooltip("Actívalo solo en el NPC que quieres revisar (por ejemplo Gaby). Muestra un texto amarillo al cargar el mapa.")]
+    public bool mostrarDiagnostico = false;
+
     bool playerNear;
+
+    // DIAGNOSTICO: texto en pantalla unos segundos al cargar el mapa (se puede borrar después)
+    string diag;
+    float diagHasta;
 
     void Start()
     {
         // DIAGNOSTICO (puedes borrar esta línea cuando todo funcione)
-        if (victoryLines != null && victoryLines.Length > 0)
-            Debug.Log("[NPC " + name + "] ganado=" + EstadoJuego.minijuegoGanado + " | escenaGanada='" + EstadoJuego.minijuegoGanadoEscena + "' | mi sceneToLoad='" + sceneToLoad + "'");
+        if (mostrarDiagnostico && victoryLines != null && victoryLines.Length > 0)
+        {
+            diag = "[NPC " + name + "] ganado=" + EstadoJuego.minijuegoGanado
+                 + " | escenaGanada='" + EstadoJuego.minijuegoGanadoEscena
+                 + "' | mi sceneToLoad='" + sceneToLoad
+                 + "' | storyboard=" + StoryboardFinal.Activo
+                 + " | pausa=" + PausaMenu.Pausado;
+            diagHasta = Time.time + 10f;
+            Debug.Log(diag);
+        }
 
         // Diálogo al regresar de ganar el minijuego
         if (!EstadoJuego.minijuegoGanado) return;
@@ -40,14 +56,69 @@ public class NPCDialogue : MonoBehaviour
         // (compatibilidad por si algún minijuego todavía no la asigna).
         bool esMiMinijuego =
             string.IsNullOrEmpty(EstadoJuego.minijuegoGanadoEscena)
-            || EstadoJuego.minijuegoGanadoEscena == sceneToLoad;
+            || Normalizar(EstadoJuego.minijuegoGanadoEscena) == Normalizar(sceneToLoad);
 
-        if (!esMiMinijuego) return;
+        if (!esMiMinijuego)
+        {
+            Debug.Log("[NPC " + name + "] la victoria fue de '" + EstadoJuego.minijuegoGanadoEscena
+                      + "' y mi Scene To Load es '" + sceneToLoad + "': no es mi minijuego");
+            return;
+        }
 
-        EstadoJuego.minijuegoGanado = false;
-        EstadoJuego.minijuegoGanadoEscena = null;
+        // La victoria se "gasta" hasta que el diálogo de verdad se abre (ver MostrarVictoria)
         playerNear = true;
-        DialogueManager.Instance.StartDialogue(victoryLines);
+        StartCoroutine(MostrarVictoria());
+    }
+
+    // Compara nombres de escena sin importar mayúsculas/minúsculas ni espacios sobrantes
+    // (Unity abre la escena aunque el nombre esté escrito con otra mayúscula, pero un == exacto fallaría)
+    static string Normalizar(string n)
+    {
+        return string.IsNullOrEmpty(n) ? "" : n.Trim().ToLowerInvariant();
+    }
+
+    // DialogueManager.StartDialogue NO abre nada (y no avisa) mientras el storyboard o la pausa
+    // estén activos. Aquí esperamos a que se liberen (hasta 5 s) y solo "gastamos" la victoria
+    // cuando el diálogo ya está abierto, para no perderla.
+    System.Collections.IEnumerator MostrarVictoria()
+    {
+        yield return null;
+        yield return new WaitForSecondsRealtime(0.5f);
+
+        float limite = Time.unscaledTime + 5f;
+        while (Time.unscaledTime < limite)
+        {
+            DialogueManager dm = DialogueManager.Instance;
+            if (dm != null && !StoryboardFinal.Activo && !PausaMenu.Pausado)
+            {
+                dm.StartDialogue(victoryLines);
+                if (dm.IsActive)
+                {
+                    EstadoJuego.minijuegoGanado = false;
+                    EstadoJuego.minijuegoGanadoEscena = null;
+                    if (diag != null) diag += " | VICTORIA MOSTRADA";
+                    yield break;
+                }
+            }
+            yield return null;
+        }
+
+        if (diag != null)
+            diag += " | NO SE PUDO ABRIR (storyboard=" + StoryboardFinal.Activo + ", pausa=" + PausaMenu.Pausado + ")";
+    }
+
+    void OnGUI()
+    {
+        if (diag == null || Time.time > diagHasta) return;
+        GUIStyle st = new GUIStyle(GUI.skin.label);
+        st.fontSize = 20;
+        st.fontStyle = FontStyle.Bold;
+        st.wordWrap = true;
+        st.normal.textColor = Color.yellow;
+        GUIStyle sombra = new GUIStyle(st);
+        sombra.normal.textColor = Color.black;
+        GUI.Label(new Rect(11f, 101f, 900f, 200f), diag, sombra);
+        GUI.Label(new Rect(10f, 100f, 900f, 200f), diag, st);
     }
 
     void Update()
