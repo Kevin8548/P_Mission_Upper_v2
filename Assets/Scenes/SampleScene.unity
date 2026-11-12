@@ -2597,6 +2597,7 @@ MonoBehaviour:
   victoryLines:
   - "\xA1Lo lograste, Leo! Muy bien, obtuviste la insignia de programaci\xF3n"
   - Ahora puedes seguir avanzando
+  mostrarDiagnostico: 0
 --- !u!58 &454442358
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -19834,6 +19835,7 @@ MonoBehaviour:
   victoryLines:
   - "\xA1Lo lograste, Leo! Obtuviste la insignia de Base de Datos"
   - Ahora puedes continuar, hasta luego
+  mostrarDiagnostico: 0
 --- !u!58 &634138995
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -20651,6 +20653,7 @@ MonoBehaviour:
   - "\xA1Lo lograste, Leo! La red de la planta alta vuelve a estar en l\xEDnea"
   - "As\xED se trabaja en Redes y Ciberseguridad: paciencia, l\xF3gica y mucho cable."
   - Gracias por la ayuda. Sigue adelante
+  mostrarDiagnostico: 0
 --- !u!58 &1237189105
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -20879,6 +20882,7 @@ MonoBehaviour:
   - Recuerda concluir todos los minijuegos para vencer al hacker
   sceneToLoad: 
   victoryLines: []
+  mostrarDiagnostico: 0
 --- !u!58 &1279650749
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -67969,8 +67973,9 @@ MonoBehaviour:
   - "\xBFEstas listo?"
   sceneToLoad: Minijuego_Rompecabezas
   victoryLines:
-  - Cumpliste con la tarea, Ahora puedes seguir
-  - Ahora puedes continuar tu camino
+  - "\xA1Lo lograste, Leo!, Obtuviste la medalla de documentaci\xF3n"
+  - Ahora puedes seguir tu camino
+  mostrarDiagnostico: 0
 --- !u!58 &1883806849
 CircleCollider2D:
   m_ObjectHideFlags: 0
