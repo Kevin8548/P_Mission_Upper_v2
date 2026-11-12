@@ -40,6 +40,10 @@ public class EthernetMinigame : MonoBehaviour
     [Tooltip("Cuántos cables equivocados se permiten en total antes de perder. 0 = sin límite (entonces nunca se pierde).")]
     public int maxFallos = 5;
 
+    // Si el minijuego vive en su propia escena, al cerrar NO se oculta la interfaz:
+    // así se queda en pantalla mientras carga el mapa (si no, se ve la pantalla azul de la cámara vacía).
+    [HideInInspector] public bool ocultarAlCerrar = true;
+
     // ------------------------------------------------------------------
     // Paleta (8 colores distintos para llegar hasta 8 cables)
     // ------------------------------------------------------------------
@@ -133,8 +137,11 @@ public class EthernetMinigame : MonoBehaviour
         statusRoutine = null;
         playing = false;
         dragging = null;
-        if (root != null) root.SetActive(false);
-        if (menu != null) menu.Ocultar();
+        if (ocultarAlCerrar)
+        {
+            if (root != null) root.SetActive(false);
+            if (menu != null) menu.Ocultar();
+        }
 
         if (timeFrozen)
         {

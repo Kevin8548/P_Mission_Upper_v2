@@ -2584,17 +2584,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCDialogue
   lines:
-  - "\xA1Hola!, Soy la profesora Gaby Nieva Paredes"
-  - "Yo imparto las materias orientadas a programaci\xF3n."
-  - "Mi reto para t\xED es que gu\xEDes a mi peque\xF1o robot por un laberinto."
+  - "\xA1Hola! Soy la profesora Gaby Nieva Paredes"
+  - "Yo imparto las materias orientadas a programaci\xF3n"
+  - "Tengo un problema... Mi peque\xF1o robot qued\xF3 atrapado en un laberinto"
+  - "T\xFA deber\xE1s guiarlo para que as\xED, mi robot logre salir"
   - "Utiliza las flechas de direcci\xF3n (\u2190 \u2192 \u2191 \u2193) como instrucciones
     de control para guiar su camino"
-  - "Recolecta las 5 estrellas y llega a la salida, pero cuidado con tocar los obst\xE1culos."
+  - "Recolecta las 5 estrellas y llega a la salida... Pero cuidado con tocar los
+    obst\xE1culos."
   - "\xBFQuieres empezar el minijuego?"
   sceneToLoad: Minijuego_Laberinto
   victoryLines:
-  - Lo lograste!, Muy bien, obtuviste la insignia
+  - "\xA1Lo lograste, Leo! Muy bien, obtuviste la insignia de programaci\xF3n"
   - Ahora puedes seguir avanzando
+  mostrarDiagnostico: 0
 --- !u!58 &454442358
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -19820,16 +19823,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCDialogue
   lines:
-  - "\xA1Hola!, Soy la profesora Elizabeth Cortez Ramos"
-  - Usualmente, imparto materias de Bases de Datos
-  - "Mi reto para t\xED es que ordenes algunos datos de acuerdo a la clasificaci\xF3n
-    a la que corresponden "
+  - "\xA1Hola! Soy la profesora Elizabeth Cortez Ramos"
+  - Usualmente, imparto las asignaturas de Bases de Datos
+  - "Necesito ayuda, algunos de los datos que ya ten\xEDa organizados han sido desordenados "
+  - "Tu tarea consiste en ordenar dichos datos de acuerdo a la clasificaci\xF3n a
+    la que corresponden"
   - "Arrastra cada tarjeta a su tabla correspondiente. Tendr\xE1s 3 fases, 3 vidas
     y tiempo limitado. "
   - "\xBFQuieres empezar el minijuego?"
   sceneToLoad: Minijuego_Oracle
   victoryLines:
-  - "\xA1Lo lograste!"
+  - "\xA1Lo lograste, Leo! Obtuviste la insignia de Base de Datos"
+  - Ahora puedes continuar, hasta luego
+  mostrarDiagnostico: 0
 --- !u!58 &634138995
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -20637,12 +20643,17 @@ MonoBehaviour:
   - "\xA1Hola!, Yo soy la profesora Maricela Gress Roldan"
   - Me gusta que me digan, MariGress
   - "Soy docente en el \xE1rea de Redes y Ciberseguridad"
+  - "Hay un problema en la planta alta del edificio, la red est\xE1 inestable debido
+    a que varios cables fueron desconectados "
+  - "Tu tarea ser\xE1 hacer las conexiones necesarias. Aseg\xFArate de que los colores
+    coincidan"
   - "\xBFQuieres empezar el minijuego?"
   sceneToLoad: MinijuegoCables
   victoryLines:
-  - "\xA1LO LOGRASTE, LEO! La red de la planta alta vuelve a estar en l\xEDnea."
+  - "\xA1Lo lograste, Leo! La red de la planta alta vuelve a estar en l\xEDnea"
   - "As\xED se trabaja en Redes y Ciberseguridad: paciencia, l\xF3gica y mucho cable."
-  - "Gracias por la ayuda. \xA1Sigue as\xED!"
+  - Gracias por la ayuda. Sigue adelante
+  mostrarDiagnostico: 0
 --- !u!58 &1237189105
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -20871,6 +20882,7 @@ MonoBehaviour:
   - Recuerda concluir todos los minijuegos para vencer al hacker
   sceneToLoad: 
   victoryLines: []
+  mostrarDiagnostico: 0
 --- !u!58 &1279650749
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -67954,15 +67966,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NPCDialogue
   lines:
   - "\xA1Hola!, Soy la profesora Margarita Lima Esteban"
-  - "Y tengo un reto para t\xED"
-  - Deberas armar un rompecabezas para obtener la siguiente medalla
-  - Donde deberas arrastrar cada parte del rompecabezas en su parte correspondiente
+  - "Y tengo una tarea para t\xED"
+  - "Deber\xE1s armar un rompecabezas para obtener la medalla de documentaci\xF3n"
+  - Arrastra cada pieza del rompecabezas al lugar al que corresponde
+  - Cuidado con el tiempo
   - "\xBFEstas listo?"
   sceneToLoad: Minijuego_Rompecabezas
   victoryLines:
-  - Felicidades has terminado el rompecabezas
-  - Has conseguido la medalla de mi materia
-  - Ahora puedes continuar tu camino
+  - "\xA1Lo lograste, Leo!, Obtuviste la medalla de documentaci\xF3n"
+  - Ahora puedes seguir tu camino
+  mostrarDiagnostico: 0
 --- !u!58 &1883806849
 CircleCollider2D:
   m_ObjectHideFlags: 0
