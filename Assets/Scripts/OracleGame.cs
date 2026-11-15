@@ -180,7 +180,11 @@ public class OracleGame : MonoBehaviour
         estado = Estado.Fin;
         EstadoJuego.minijuegoGanado = true;
         EstadoJuego.minijuegoGanadoEscena = SceneManager.GetActiveScene().name;
-        MostrarFin("¡OBJETIVO CUMPLIDO!", "FASES COMPLETADAS: 3 / 3", texEstrella);
+
+        // Se gana la medalla roja (base de datos) y se muestra en lugar de la estrella
+        Medallas.Ganar(Medallas.BaseDatos);
+        Texture2D medalla = Medallas.TexturaDe(Medallas.BaseDatos);
+        MostrarFin("¡OBJETIVO CUMPLIDO!", "FASES COMPLETADAS: 3 / 3", medalla != null ? medalla : texEstrella, medalla != null);
     }
 
     void Perder(string titulo, Texture2D icono)
@@ -494,8 +498,16 @@ public class OracleGame : MonoBehaviour
     }
 
     // ---------------- Menú final ----------------
-    void MostrarFin(string titulo, string subtitulo, Texture2D icono)
+    void MostrarFin(string titulo, string subtitulo, Texture2D icono, bool esMedalla = false)
     {
+        // La medalla mide 16x32 (1:2), así que se muestra más alta que el icono normal
+        finIcono.rectTransform.sizeDelta = esMedalla ? new Vector2(190, 380) : new Vector2(150, 150);
+        finIcono.rectTransform.anchoredPosition = new Vector2(0, esMedalla ? 250 : 250);
+        float dy = esMedalla ? -120f : 0f; // el texto baja un poco para que quepa la medalla grande
+        finTitulo.rectTransform.anchoredPosition = new Vector2(0, 100 + dy);
+        finSubtitulo.rectTransform.anchoredPosition = new Vector2(0, -30 + dy);
+        for (int n = 0; n < opcionesRT.Length; n++)
+            opcionesRT[n].anchoredPosition = new Vector2(0, -130 - n * 85 + dy);
         finTitulo.text = titulo;
         finSubtitulo.text = subtitulo;
         finIcono.texture = icono;
@@ -686,7 +698,7 @@ public class OracleGame : MonoBehaviour
         Ajustar(hint.rectTransform, C, C, C, new Vector2(0, -210), new Vector2(1700, 130));
 
         // Menú final
-        RectTransform fin = CrearPanel("MenuFin", raiz, new Color(0f, 0f, 0f, 0.8f));
+        RectTransform fin = CrearPanel("MenuFin", raiz, new Color(0f, 0f, 0f, 0.88f));
         Ajustar(fin, Vector2.zero, Vector2.one, C, Vector2.zero, Vector2.zero);
         panelFin = fin.gameObject;
         finIcono = CrearRaw("Icono", fin, texEstrella, new Vector2(0, 250), new Vector2(150, 150));

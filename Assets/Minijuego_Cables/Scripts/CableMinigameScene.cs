@@ -29,6 +29,9 @@ public class CableMinigameScene : MonoBehaviour
             return;
         }
 
+        // La interfaz del minijuego se queda visible mientras carga el mapa (evita la pantalla azul)
+        minigame.ocultarAlCerrar = false;
+
         minigame.onCompleted.AddListener(OnWon);
         minigame.onClosed.AddListener(OnClosed);
         minigame.Begin();
@@ -53,6 +56,10 @@ public class CableMinigameScene : MonoBehaviour
         if (leaving) return;
         leaving = true;
         Time.timeScale = 1f;
-        SceneManager.LoadScene("SampleScene");
+        // Si el nombre de returnScene (guardado en la escena) no está en el Build Profile, se usa "SampleScene"
+        string destino = Application.CanStreamedLevelBeLoaded(returnScene) ? returnScene : "SampleScene";
+        if (destino != returnScene)
+            Debug.LogWarning("CableMinigameScene: la escena '" + returnScene + "' no está en el Build Profile. Regreso a 'SampleScene'.");
+        SceneManager.LoadScene(destino);
     }
 }
