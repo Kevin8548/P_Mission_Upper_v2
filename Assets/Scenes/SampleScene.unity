@@ -19691,6 +19691,7 @@ GameObject:
   - component: {fileID: 634138993}
   - component: {fileID: 634138995}
   - component: {fileID: 634138994}
+  - component: {fileID: 634138996}
   m_Layer: 0
   m_Name: Eli_Saludo
   m_TagString: Untagged
@@ -19900,6 +19901,31 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 0.4
+--- !u!114 &634138996
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 634138989}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f25d17f08f20df74da4a72f01de4f609, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueManager
+  dialoguePanel: {fileID: 0}
+  dialogueText: {fileID: 0}
+  promptPanel: {fileID: 0}
+  choicePanel: {fileID: 0}
+  yesButton: {fileID: 0}
+  noButton: {fileID: 0}
+  selectedColor: {r: 1, g: 0.92, b: 0.2, a: 1}
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
+  selectedBgColor: {r: 1, g: 1, b: 1, a: 0.18}
+  selectedScale: 1.12
+  animSpeed: 14
+  clickClip: {fileID: 8300000, guid: ebf2f46d322b6be4e8d0719518856903, type: 3}
+  clickVolume: 1
 --- !u!1 &841451782
 GameObject:
   m_ObjectHideFlags: 0
@@ -21155,6 +21181,8 @@ MonoBehaviour:
   selectedBgColor: {r: 1, g: 1, b: 1, a: 0.18}
   selectedScale: 1.12
   animSpeed: 14
+  clickClip: {fileID: 0}
+  clickVolume: 0.7
 --- !u!1 &1440463223
 GameObject:
   m_ObjectHideFlags: 0
