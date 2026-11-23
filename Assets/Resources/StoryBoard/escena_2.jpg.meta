@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 18c257961d1db024fadd282d1e666d57
+guid: 426c10170b0c6664d9723287b002c275
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7189634521555258234
-    second: Storyboard_05_0
+      213: -2521078884886426789
+    second: escena_2_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -37,7 +37,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 0
+    filterMode: 1
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -46,7 +46,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Storyboard_05_0
+      name: escena_2_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 1000
-        height: 400
+        width: 1376
+        height: 768
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 68430d5be79493c90800000000000000
-      internalID: -7189634521555258234
+      spriteID: b5b4b978c14530dd0800000000000000
+      internalID: -2521078884886426789
       vertices: []
       indices: 
       edges: []
@@ -151,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Storyboard_05_0: -7189634521555258234
+      escena_2_0: -2521078884886426789
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
