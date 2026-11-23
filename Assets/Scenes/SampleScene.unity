@@ -21059,7 +21059,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LeoController
   speed: 3
-  runSpeed: 10
+  runSpeed: 8
 --- !u!60 &1153071646
 PolygonCollider2D:
   m_ObjectHideFlags: 0

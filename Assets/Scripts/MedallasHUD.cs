@@ -5,8 +5,9 @@ using UnityEngine.SceneManagement;
 using TMPro;
 
 // Marcador de medallas para el juego principal (donde Leo camina el recorrido virtual).
-// Muestra "MEDALLAS: 1/4" arriba a la izquierda. Al ganar un minijuego, la medalla aparece
-// a mitad de pantalla, suena un sonidito al salir del centro y vuela hacia el contador.
+// Muestra arriba a la izquierda las 4 medallas a color, encimadas y muy juntas, y luego ": 0 / 4".
+// Al ganar un minijuego, la medalla aparece a mitad de pantalla, suena un sonidito al salir
+// del centro y vuela hacia el contador, que sube con un rebote.
 // Al llegar a 4/4, espera 5 s sin diálogo y lanza el storyboard final.
 public class MedallasHUD : MonoBehaviour
 {
@@ -26,7 +27,16 @@ public class MedallasHUD : MonoBehaviour
     [Header("Final de la historia")]
     public float esperaFinal = 5f; // segundos SIN diálogo antes de lanzar el storyboard
 
-    static readonly Color Dorado = new Color(1f, 0.85f, 0.2f);
+    // ---- MARCADOR (arriba a la izquierda) ----
+    const float IconoAncho = 52f;     // ancho de cada medalla
+    const float IconoAlto = 104f;     // alto (el doble del ancho, como tus PNG de 16x32)
+    const float Separacion = 15f;     // distancia entre medallas; más chico = más encimadas
+    const float MargenIzq = 40f;      // distancia al borde izquierdo
+    const float DistArriba = 74f;     // distancia al borde de arriba (centro de las medallas)
+    const float EspacioAlTexto = 22f; // espacio entre las medallas y el ": 0 / 4"
+    const float TamanoTexto = 56f;    // tamaño de letra del contador
+
+    static readonly Color Dorado = new Color(0f, 0f, 0f);
 
     TMP_Text textoContador;
     RectTransform canvasRT, medallaRT;
@@ -34,6 +44,7 @@ public class MedallasHUD : MonoBehaviour
     AudioSource audioSource;
     int mostrado;
     float escalaContador = 1f;
+    float xTexto; // dónde empieza el ": 0 / 4"
 
     enum Fase { Nada, Aparece, Espera, Vuela }
     Fase fase = Fase.Nada;
@@ -57,7 +68,7 @@ public class MedallasHUD : MonoBehaviour
 
     void Start()
     {
-        Debug.Log("[MedallasHUD v5 - con sonido] escena " + SceneManager.GetActiveScene().name +
+        Debug.Log("[MedallasHUD v7 - iconos y contador] escena " + SceneManager.GetActiveScene().name +
                   " | medallas: " + Medallas.Cantidad + "/" + Medallas.Total);
         Construir();
 
@@ -118,7 +129,9 @@ public class MedallasHUD : MonoBehaviour
                     if (t >= duracionEspera)
                     {
                         inicioVuelo = medallaRT.anchoredPosition;
-                        destino = new Vector2(-canvasRT.rect.width / 2f + 150f, canvasRT.rect.height / 2f - 64f);
+                        // vuela hacia el contador ": 0 / 4"
+                        destino = new Vector2(-canvasRT.rect.width / 2f + xTexto + 70f,
+                                              canvasRT.rect.height / 2f - DistArriba);
                         Sonar(); // suena al salir del centro rumbo al contador
                         fase = Fase.Vuela;
                         t = 0f;
@@ -133,7 +146,7 @@ public class MedallasHUD : MonoBehaviour
                     Vector2 pos = Vector2.Lerp(inicioVuelo, destino, e);
                     pos.x -= Mathf.Sin(k * Mathf.PI) * 120f; // pequeña curva en el camino
                     medallaRT.anchoredPosition = pos;
-                    medallaRT.localScale = Vector3.one * Mathf.Lerp(1f, 0.25f, e);
+                    medallaRT.localScale = Vector3.one * Mathf.Lerp(1f, IconoAlto / tamanoMedalla.y, e);
                     if (k >= 1f)
                     {
                         medallaRT.gameObject.SetActive(false);
@@ -194,7 +207,7 @@ public class MedallasHUD : MonoBehaviour
 
     void ActualizarTexto()
     {
-        textoContador.text = "MEDALLAS: " + mostrado + "/" + Medallas.Total;
+        textoContador.text = ": " + mostrado + "/" + Medallas.Total;
     }
 
     // ---------------- Interfaz construida por código ----------------
@@ -213,25 +226,52 @@ public class MedallasHUD : MonoBehaviour
         cs.matchWidthOrHeight = 0.5f;
         canvasRT = cgo.GetComponent<RectTransform>();
 
-        // Texto "MEDALLAS: x/4", sin panel de fondo (con contorno negro para que se lea)
+        // Las 4 medallas a color, encimadas, arriba a la izquierda.
+        // Se crean de la última a la primera para que la primera quede ARRIBA del montón.
+        for (int i = Medallas.Total - 1; i >= 0; i--)
+        {
+            GameObject go = new GameObject("Icono" + i, typeof(RectTransform), typeof(Image));
+            go.transform.SetParent(cgo.transform, false);
+
+            Image img = go.GetComponent<Image>();
+            img.sprite = Medallas.SpriteDe(Medallas.Todas[i]);
+            img.enabled = img.sprite != null; // si falta el PNG, no dibuja un cuadro blanco
+            img.preserveAspect = true;
+            img.raycastTarget = false;
+
+            RectTransform rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = rt.anchorMax = new Vector2(0f, 1f);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition = new Vector2(MargenIzq + IconoAncho / 2f + i * Separacion, -DistArriba);
+            rt.sizeDelta = new Vector2(IconoAncho, IconoAlto);
+
+            // sombra ligera para que se distingan sobre el piso claro
+            Shadow sh = go.AddComponent<Shadow>();
+            sh.effectColor = new Color(0f, 0f, 0f, 0.6f);
+            sh.effectDistance = new Vector2(3f, -3f);
+        }
+
+        // Texto ": 0 / 4" a la derecha de las medallas (con contorno negro para que se lea)
+        xTexto = MargenIzq + IconoAncho + (Medallas.Total - 1) * Separacion + EspacioAlTexto;
         GameObject tgo = new GameObject("Contador", typeof(RectTransform));
         tgo.transform.SetParent(cgo.transform, false);
         TextMeshProUGUI txt = tgo.AddComponent<TextMeshProUGUI>();
-        txt.fontSize = 56f;
+        txt.fontSize = TamanoTexto;
         txt.color = Dorado;
         txt.alignment = TextAlignmentOptions.MidlineLeft;
         txt.raycastTarget = false;
-        txt.outlineWidth = 0.25f;
-        txt.outlineColor = new Color32(0, 0, 0, 255);
+        txt.fontStyle = FontStyles.Bold;
+        txt.outlineWidth = 0.18f;
+        txt.outlineColor = new Color32(255, 255, 255, 255);
         if (fuente != null) txt.font = fuente;
         RectTransform trt = txt.rectTransform;
         trt.anchorMin = trt.anchorMax = new Vector2(0f, 1f);
         trt.pivot = new Vector2(0f, 0.5f);
-        trt.anchoredPosition = new Vector2(40f, -64f);
-        trt.sizeDelta = new Vector2(800f, 90f);
+        trt.anchoredPosition = new Vector2(xTexto, -DistArriba);
+        trt.sizeDelta = new Vector2(400f, 90f);
         textoContador = txt;
 
-        // Medalla que vuela (la medalla mide 16x32, o sea 1:2)
+        // Medalla que vuela (la medalla mide 16x32, o sea 1:2). Va al final para quedar encima de todo.
         GameObject mgo = new GameObject("MedallaGanada", typeof(RectTransform), typeof(Image));
         mgo.transform.SetParent(cgo.transform, false);
         medallaImg = mgo.GetComponent<Image>();
