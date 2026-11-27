@@ -20,7 +20,7 @@ public class OracleGame : MonoBehaviour
     static readonly string[] Nombres = { "Evelyn", "Esmeralda", "Kevin", "Larisa", "Miguel Ángel", "Brandon", "Abdiel", "Sahid", "Brian", "Alexa", "Gael", "Rodrigo", "Ared", "Emilio", "Alfredo", "Verónica", "Miguel", "Yamileth" };
     static readonly string[] Paises = { "México", "Brasil", "Argentina", "Japón", "Canadá", "Chile", "España", "Perú", "Francia", "Italia", "Colombia", "Egipto" };
     static readonly string[] ColoresNombre = { "Rojo", "Azul", "Verde", "Amarillo", "Morado", "Naranja", "Rosa", "Café", "Turquesa", "Gris" };
-    static readonly string[] Carreras = { "Medicina", "Derecho", "Arquitectura", "Enfermería", "Psicología", "Ingeniería en Software", "Ingeniería en Redes Digitales", "Ingeniería en Entornos Virtuales", "Nutrición", "Odontología", "Pedagogía", "Veterinaria" };
+    static readonly string[] Carreras = { "Medicina", "Derecho", "Arquitectura", "Enfermería", "Psicología", "Ingeniería en Software", "Ingeniería en Redes Digitales", "Ing en Entornos Virtuales", "Nutrición", "Odontología", "Pedagogía", "Veterinaria" };
     static readonly string[] NombreCat = { "NOMBRE", "EDAD", "PAÍS", "COLOR", "CARRERA" };
     static readonly Color[] ColorCat = {
         new Color32(111, 163, 255, 255), new Color32(179, 145, 255, 255), new Color32(111, 211, 224, 255), new Color32(255, 183, 131, 255), new Color32(134, 224, 176, 255) };
@@ -133,6 +133,7 @@ public class OracleGame : MonoBehaviour
     void IniciarFase(int n)
     {
         fase = n;
+        if (n > 1) SonidosJuego.Fase2();
         foreach (Carta c in cartas) Destroy(c.rt.gameObject);
         cartas.Clear();
         for (int i = 0; i < enSlot.Length; i++) enSlot[i] = null;
@@ -310,6 +311,7 @@ public class OracleGame : MonoBehaviour
             {
                 tiempo = 0f;
                 ActualizarTiempo();
+                SonidosJuego.Error();
                 Perder("¡SE ACABÓ EL TIEMPO!", texReloj);
                 return;
             }
@@ -406,6 +408,7 @@ public class OracleGame : MonoBehaviour
         ActualizarProgreso();
         Mensaje("¡CORRECTO!", Acierto);
         Flash(Acierto);
+        SonidosJuego.Acierto();
 
         if (colocadasFase >= totalFase) CompletarFase();
         else CrearCartaEnSlot(slot);
@@ -419,6 +422,7 @@ public class OracleGame : MonoBehaviour
         z.flash = -1f;
         Mensaje("¡ERROR! ESO NO ES " + NombreCat[z.cat], Fallo);
         Flash(Fallo);
+        SonidosJuego.Error();
         if (vidas <= 0) Perder("¡FALLASTE!", texCorazonVacio);
     }
 
