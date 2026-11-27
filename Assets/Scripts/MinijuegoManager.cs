@@ -51,12 +51,14 @@ public class MinijuegoManager : MonoBehaviour
         if (!Jugando) return;
         estrellas++;
         ActualizarContador();
+        SonidosLaberinto.Estrella();
         escalaContador = 1.4f;
     }
 
     public void Perder()
     {
         if (!Jugando) return;
+        SonidosLaberinto.Choque();
         Jugando = false;
         MostrarFin("¡FALLASTE!", "ESTRELLAS: " + estrellas + "/" + total, iconoFallo, Color.white);
     }
@@ -68,6 +70,7 @@ public class MinijuegoManager : MonoBehaviour
         if (estrellas >= total)
         {
             Jugando = false;
+            SonidosLaberinto.Estrella();
             EstadoJuego.minijuegoGanado = true;
             EstadoJuego.minijuegoGanadoEscena = SceneManager.GetActiveScene().name;
 

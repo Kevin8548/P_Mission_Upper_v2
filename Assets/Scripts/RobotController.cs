@@ -10,10 +10,23 @@ public class RobotController : MonoBehaviour
     Rigidbody2D rb;
     Vector2 direccion;
     bool prefiereHorizontal = true;
+    Vector2Int ultimaCasilla;          // para sonar un paso al cambiar de casilla
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+    }
+
+    void Start()
+    {
+        // Va en Start porque origenCuadricula se asigna después de Awake
+        ultimaCasilla = CasillaActual();
+    }
+
+    Vector2Int CasillaActual()
+    {
+        Vector2 p = rb.position - origenCuadricula;
+        return new Vector2Int(Mathf.RoundToInt(p.x), Mathf.RoundToInt(p.y));
     }
 
     void Update()
@@ -67,6 +80,15 @@ public class RobotController : MonoBehaviour
         }
 
         rb.linearVelocity = vel;
+
+        // Suena un paso cada vez que el robot entra a una casilla nueva
+        Vector2Int casilla = CasillaActual();
+        if (casilla != ultimaCasilla)
+        {
+            ultimaCasilla = casilla;
+            if (manager != null && manager.Jugando)
+                SonidosLaberinto.Paso();
+        }
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -80,11 +102,11 @@ public class RobotController : MonoBehaviour
         {
             item.usado = true;
             Destroy(other.gameObject);
-            manager.SumarEstrella();
+            manager.SumarEstrella();      // aquí suena la estrella
         }
         else if (item.tipo == TipoItem.Obstaculo)
         {
-            manager.Perder();
+            manager.Perder();             // aquí suena el choque
         }
     }
 
@@ -94,6 +116,6 @@ public class RobotController : MonoBehaviour
 
         ItemMinijuego item = other.GetComponent<ItemMinijuego>();
         if (item != null && item.tipo == TipoItem.Salida)
-            manager.IntentarGanar();
+            manager.IntentarGanar();      // aquí suena al ganar
     }
 }
